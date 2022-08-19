@@ -35,9 +35,9 @@ async def initialize(session, email, password, highschool):
 async def home():
     return render_template("index.html")
 
-@app.route("/api/login", methods=["GET", "POST"])
+@app.route("/api/login", methods=["POST"])
 async def basicInforUpdate():
-    if request.method == "GET":
+    if request.method == "POST":
         data = {}
         async with aiohttp.ClientSession() as session:
             
@@ -61,7 +61,7 @@ async def basicInforUpdate():
         return jsonify(data)
 
 
-@app.route("/api/get/courseinfos", methods=["GET"])
+@app.route("/api/courseinfos", methods=["POST"])
 async def getcourseinfo():
     async with aiohttp.ClientSession() as session:
         email, password, highschool = parse_request_data()
@@ -73,7 +73,7 @@ async def getcourseinfo():
         return jsonify(grade_page_data)
 
 
-@app.route("/api/get/currentgrades", methods=["GET"])
+@app.route("/api/currentgrades", methods=["POST"])
 async def currentgrades():
     async with aiohttp.ClientSession() as session:
 
