@@ -16,8 +16,20 @@ class DataExtractor(BeautifulSoup):
         table = main_row.find("table", class_="list")
         tr = table.find("tr", class_="listheading")
         td = tr.find("td", class_="cellCenter")
-        curr_mp = td.find_all('option', selected=True)
+        curr_mp = td.find_all('option', selected=True)[0]
         return str(curr_mp.attrs['value'])
+
+    def allMarkingPeriod(self):
+        vals = []
+        main_table = self.find("table", role="main")
+        main_row = main_table.find_all("tr")[1]
+        table = main_row.find("table", class_="list")
+        tr = table.find("tr", class_="listheading")
+        td = tr.find("td", class_="cellCenter")
+        mps = td.find_all('option')
+        for mp in mps:
+            vals.append(mp.attrs['value'])
+        return vals
 
     def both_where_sche(self, user):
         main_tables = self.find_all("table", role="main")
@@ -76,16 +88,17 @@ class DataExtractor(BeautifulSoup):
         return (schedule_link, name, grade, student_id, state_id)
 
     def current_grades(self):
-        grades = {
+        curr_courses_grades  = {
             "grades": []
         }
 
         def find_grade(row, current_course):
-            teacher = grade = not_graded = "N/A"
+            teacher = grade = not_graded = email = "N/A"
 
             try:
                 teacher = row.find_all("td", recursive=False)
                 teacher = teacher[1].text.split("Email:")[0].strip()
+                email = teacher[1].text.split("Email:")[1].strip()
             except AttributeError:
                 pass
 
@@ -102,8 +115,8 @@ class DataExtractor(BeautifulSoup):
                 except AttributeError:
                     pass
 
-            grades['grades'].append({
-                current_course: [course_name, teacher, grade, not_graded]
+            curr_courses_grades['grades'].append({
+                current_course: [course_name, teacher, email, grade, not_graded]
             })
 
 
@@ -116,7 +129,7 @@ class DataExtractor(BeautifulSoup):
         rows = row_even + row_odd
         for idx, row in enumerate(rows):
             find_grade(row, idx)
-        return grades
+        return curr_courses_grades 
 
     def courseIds(self):
         course_list = []

@@ -25,11 +25,16 @@ class GenesisInformation():
 
                 return j_id, captured_data, url
 
+    async def main_info(self, highschool_name, j_session_id, url, user: int = 0):
+        html = await self.get(j_session_id, url)
+        soup = DataExtractor(highschool_name, html, "html.parser")
+        users, whereabouts, schedule = soup.both_where_sche(user)
+        schedule_link, name, grade, student_id, state_id = soup.schedule(schedule)
+        return student_id
+
     async def front_page_data(self, highschool_name, j_session_id, url, user: int = 0):
         html = await self.get(j_session_id, url)
         soup = DataExtractor(highschool_name, html, "html.parser")
-        with open("test.html", "w") as f:
-            f.write(str(soup))
         users, whereabouts, schedule = soup.both_where_sche(user)
         img_url, counselor_name, age, birthday, locker = soup.whereabouts(whereabouts)
         schedule_link, name, grade, student_id, state_id = soup.schedule(schedule)
@@ -51,6 +56,23 @@ class GenesisInformation():
         soup = DataExtractor(highschool_name, html, "html.parser")
         assignments = soup.course_work(course_name)
         return assignments
+
+    async def allMarkingPeriods(self, highschool_name, j_session_id, student_id: int):
+        data = {
+            "tab1": "studentdata",
+            "tab2": "gradebook",
+            "tab3": "weeklysummary",
+            "action": "form",
+            "studentid": student_id
+            }
+
+        url = my_constants[highschool_name]['root']+"/genesis/parents"
+        html = await self.get(j_session_id, url, data)
+        soup = DataExtractor(highschool_name, html, "html.parser")
+        mps = soup.allMarkingPeriod()
+        return mps
+
+
 
     async def grade_page_data(self, highschool_name, j_session_id, student_id: int, mp: str = None):
 
@@ -98,8 +120,8 @@ class GenesisInformation():
         url = my_constants[highschool_name]['root'] + "/genesis/parents"
         html = await self.get(j_session_id, url, data)
         soup = DataExtractor(highschool_name, html, "html.parser")
-        curr_grades = soup.current_grades()
-        return curr_grades
+        curr_courses_grades  = soup.current_grades()
+        return curr_courses_grades 
 
     async def get(self, j_session_id, url, headers=None):
         async with aiohttp.ClientSession(cookies={"JSESSIONID": j_session_id}) as session:

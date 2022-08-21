@@ -25,11 +25,16 @@ def parse_request_data():
     highschool = request_data['highschool']
     return email, password, highschool
 
-async def initialize(session, email, password, highschool):
+async def info(session, email, password, highschool):
     j_session_id, parameter_data, url = await myInfo.get_cookie(email, password, session, highschool)
     front_page_data = await myInfo.front_page_data(highschool, j_session_id, url)
     users, img_url, counselor_name, age, birthday, locker, schedule_link, name, grade, student_id, state_id = front_page_data
     return j_session_id, users, img_url, counselor_name, age, birthday, locker, schedule_link, name, grade, student_id, state_id
+
+async def initialize(session, email, password, highschool):
+    j_session_id, parameter_data, url = await myInfo.get_cookie(email, password, session, highschool)
+    student_id = await myInfo.main_info(highschool, j_session_id, url)
+    return j_session_id, student_id
 
 @app.route("/")
 async def home():
@@ -43,7 +48,7 @@ async def basicInforUpdate():
             
             email, password, highschool = parse_request_data()
 
-            j_session_id, users, img_url, counselor_name, age, birthday, locker, schedule_link, name, grade, student_id, state_id = await initialize(
+            j_session_id, users, img_url, counselor_name, age, birthday, locker, schedule_link, name, grade, student_id, state_id = await info(
                 session, email, password, highschool)
 
             data['users'] = users
@@ -65,25 +70,36 @@ async def basicInforUpdate():
 async def getcourseinfo():
     async with aiohttp.ClientSession() as session:
         email, password, highschool = parse_request_data()
-        j_session_id, users, img_url, counselor_name, age, birthday, locker, schedule_link, name, grade, student_id, state_id = await initialize(
-            session, email, password, highschool)
+        request_data = request.data
+        request_data = json.loads(request_data.decode('utf-8'))
+        mp = request_data["mp"]
+
+        j_session_id, student_id = await initialize(session, email, password, highschool)
 
         grade_page_data = await myInfo.grade_page_data(highschool, j_session_id, student_id, mp)
 
         return jsonify(grade_page_data)
-
 
 @app.route("/api/currentgrades", methods=["POST"])
 async def currentgrades():
     async with aiohttp.ClientSession() as session:
 
         email, password, highschool = parse_request_data()
-        j_session_id, users, img_url, counselor_name, age, birthday, locker, schedule_link, name, grade, student_id, state_id = await initialize(
-            session, email, password, highschool)
+        j_session_id, student_id = await initialize(session, email, password, highschool)
 
-        current_grades = await myInfo.current_grades(highschool, j_session_id, student_id)
+        curr_courses_grades  = await myInfo.current_grades(highschool, j_session_id, student_id)
 
-        return jsonify(current_grades)
+        return jsonify(curr_courses_grades)
+
+@app.route("/api/availableMPs", methods=["POST"])
+async def allMarkingPeriods():
+    async with aiohttp.ClientSession() as session:
+
+        email, password, highschool = parse_request_data()
+        j_session_id, student_id = await initialize(session, email, password, highschool)
+        mps = await myInfo.allMarkingPeriods(highschool, j_session_id, student_id)
+        return jsonify(mps)
+        
 
 
 if __name__ == '__main__':
