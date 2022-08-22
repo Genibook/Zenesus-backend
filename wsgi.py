@@ -80,6 +80,7 @@ async def getcourseinfo():
 
         return jsonify(grade_page_data)
 
+# TODO finish a thing where you can fetch old mp grades (that were locked in)
 @app.route("/api/currentgrades", methods=["POST"])
 async def currentgrades():
     async with aiohttp.ClientSession() as session:
@@ -92,7 +93,7 @@ async def currentgrades():
         return jsonify(curr_courses_grades)
 
 @app.route("/api/availableMPs", methods=["POST"])
-async def allMarkingPeriods():
+async def allMarkingPeriodsandCurrent():
     async with aiohttp.ClientSession() as session:
 
         email, password, highschool = parse_request_data()
@@ -100,7 +101,16 @@ async def allMarkingPeriods():
         mps = await myInfo.allMarkingPeriods(highschool, j_session_id, student_id)
         return jsonify(mps)
         
-
+@app.route("/api/loginConnection", methods=["POST"])
+async def checkUsernameAndPassword():
+    async with aiohttp.ClientSession() as session:
+        email, password, highschool = parse_request_data()
+        try:
+            j_session_id, parameter_data, url = await myInfo.get_cookie(email, password, session, highschool)
+            return jsonify({"code":200, "message": "correct username/password"})
+        except Exception as e:
+            print(e)
+            return jsonify({"code":401, "message": "invalid username/password"})
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)

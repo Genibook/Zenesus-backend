@@ -11,6 +11,7 @@ class GenesisInformation():
         pass
 
     async def get_cookie(self, email, password, session: aiohttp.ClientSession, highschool_name):
+        print(type(email), type(password), highschool_name)
         data = my_constants[highschool_name]["data"]
         data["j_username"] = email
         data["j_password"] = password
@@ -22,7 +23,7 @@ class GenesisInformation():
                 url = str(response.url)
                 parsed_url = urlparse(url)
                 captured_data = parse_qs(parsed_url.query)
-
+                print(j_id, captured_data, url)
                 return j_id, captured_data, url
 
     async def main_info(self, highschool_name, j_session_id, url, user: int = 0):
@@ -70,7 +71,8 @@ class GenesisInformation():
         html = await self.get(j_session_id, url, data)
         soup = DataExtractor(highschool_name, html, "html.parser")
         mps = soup.allMarkingPeriod()
-        return mps
+        currmp = soup.currentMarkingPeriod()
+        return {'mps':mps, 'curr_mp': currmp}
 
 
 

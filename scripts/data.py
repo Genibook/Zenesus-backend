@@ -200,7 +200,7 @@ class DataExtractor(BeautifulSoup):
             course_namee: [],
         }
 
-        for row in rows:
+        for idx, row in enumerate(rows):
             data = row.find_all("td", class_="cellLeft")
             if len(data) != 9:
                 continue
@@ -228,7 +228,7 @@ class DataExtractor(BeautifulSoup):
                     description = data[4].find("div").text.strip().replace("\r", " ").replace("\n", " ")
                 grade_percent = data[5].find("div").text.strip()
                 grade_num = str(data[5].text).replace(grade_percent, "").replace("\r", "").replace("\n", "").replace(
-                    " ", "")
+                    " ", "").replace("%", "")
 
                 comment = str(data[6].find("div").find("div").text).strip()
                 prev = data[7].text.strip()
@@ -237,6 +237,7 @@ class DataExtractor(BeautifulSoup):
                 pass
 
             data = {
+                "course_name": course_namee,
                 "mp": mp,
                 "dayname": dayname,
                 "full_dayname": full_dayname,
@@ -252,7 +253,7 @@ class DataExtractor(BeautifulSoup):
                 "prev": prev,
                 "docs": docs
             }
-            assignments[course_namee].append(data)
+            assignments[idx].append(data)
 
         print(assignments)
 
