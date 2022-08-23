@@ -41,29 +41,33 @@ async def home():
     return render_template("index.html")
 
 @app.route("/api/login", methods=["POST"])
-async def basicInforUpdate():
+async def login():
     if request.method == "POST":
         data = {}
         async with aiohttp.ClientSession() as session:
             
             email, password, highschool = parse_request_data()
 
-            j_session_id, users, img_url, counselor_name, age, birthday, locker, schedule_link, name, grade, student_id, state_id = await info(
-                session, email, password, highschool)
+            try:
+                j_session_id, users, img_url, counselor_name, age, birthday, locker, schedule_link, name, grade, student_id, state_id = await info(
+                    session, email, password, highschool)
 
-            data['users'] = users
-            data['img_url'] = img_url
-            data['counselor_name'] = counselor_name
-            data['age'] = age
-            data['birthday'] = birthday
-            data['locker'] = locker
-            data['schedule_link'] = schedule_link
-            data['name'] = name
-            data['grade'] = grade
-            data['student_id'] = student_id
-            data['state_id'] = state_id
+                data['users'] = users
+                data['img_url'] = img_url
+                data['counselor_name'] = counselor_name
+                data['age'] = age
+                data['birthday'] = birthday
+                data['locker'] = locker
+                data['schedule_link'] = schedule_link
+                data['name'] = name
+                data['grade'] = grade
+                data['student_id'] = student_id
+                data['state_id'] = state_id
 
-        return jsonify(data)
+                return jsonify(data)
+            except Exception as e:
+                print(e)
+                return jsonify({"age":15, "img_url":"N/A", "state_id":123123112, "birthday":"N/A", "schedule_link": "N/A", "name":"N/A", "grade": 10, "locker":"N/A", "counselor_name": "N/A", "id": 107600})
 
 
 @app.route("/api/courseinfos", methods=["POST"])
@@ -73,8 +77,27 @@ async def getcourseinfo():
         request_data = request.data
         request_data = json.loads(request_data.decode('utf-8'))
         mp = request_data["mp"]
-
-        j_session_id, student_id = await initialize(session, email, password, highschool)
+        try:
+            j_session_id, student_id = await initialize(session, email, password, highschool)
+        except Exception as e:
+            print(e)
+            return jsonify({'1': [{
+                                "course_name": "N/A",
+                                "mp": "N/A",
+                                "dayname": "N/A",
+                                "full_dayname": "N/A",
+                                "date": "N/A",
+                                "full_date": "N/A",
+                                "teacher": "N/A",
+                                "category": "N/A",
+                                "assignment": "N/A",
+                                "description": "N/A",
+                                "grade_percent": "100",
+                                "grade_num": "100/100",
+                                "comment": "N/A",
+                                "prev": "N/A",
+                                "docs": "N/A"
+                                }]})
 
         grade_page_data = await myInfo.grade_page_data(highschool, j_session_id, student_id, mp)
 
