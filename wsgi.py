@@ -86,7 +86,12 @@ async def currentgrades():
     async with aiohttp.ClientSession() as session:
 
         email, password, highschool = parse_request_data()
-        j_session_id, student_id = await initialize(session, email, password, highschool)
+        
+        try:
+            j_session_id, student_id = await initialize(session, email, password, highschool)
+        except Exception as e:
+            print(e)
+            return jsonify({'grades':[["N/A", "N/A", "N/A", "100", "N/A"]]})
 
         curr_courses_grades  = await myInfo.current_grades(highschool, j_session_id, student_id)
 
@@ -97,7 +102,13 @@ async def allMarkingPeriodsandCurrent():
     async with aiohttp.ClientSession() as session:
 
         email, password, highschool = parse_request_data()
-        j_session_id, student_id = await initialize(session, email, password, highschool)
+        
+        try:
+            j_session_id, student_id = await initialize(session, email, password, highschool)
+        except Exception as e:
+            print(e)
+            return jsonify({'mps':["MP1", "MP2"], 'curr_mp': 'MP1'})
+        
         mps = await myInfo.allMarkingPeriods(highschool, j_session_id, student_id)
         return jsonify(mps)
         
