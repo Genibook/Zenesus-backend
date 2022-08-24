@@ -41,7 +41,6 @@ async def home():
     return render_template("index.html")
 
 @app.route("/api/login", methods=["POST"])
-@cross_origin(supports_credentials=True)
 async def login():
     if request.method == "POST":
         data = {}
@@ -72,7 +71,6 @@ async def login():
 
 
 @app.route("/api/courseinfos", methods=["POST"])
-@cross_origin(supports_credentials=True)
 async def getcourseinfo():
     async with aiohttp.ClientSession() as session:
         email, password, highschool = parse_request_data()
@@ -107,7 +105,6 @@ async def getcourseinfo():
 
 # TODO finish a thing where you can fetch old mp grades (that were locked in)
 @app.route("/api/currentgrades", methods=["POST"])
-@cross_origin(supports_credentials=True)
 async def currentgrades():
     async with aiohttp.ClientSession() as session:
 
@@ -124,7 +121,6 @@ async def currentgrades():
         return jsonify(curr_courses_grades)
 
 @app.route("/api/availableMPs", methods=["POST"])
-@cross_origin(supports_credentials=True)
 async def allMarkingPeriodsandCurrent():
     async with aiohttp.ClientSession() as session:
 
