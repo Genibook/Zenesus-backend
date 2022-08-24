@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 from scripts.genesis_info import GenesisInformation
 import json
-
+from flask_cors import CORS, cross_origin
 
 class Storage():
     def __init__(self):
@@ -15,7 +15,7 @@ load_dotenv()
 myInfo = GenesisInformation()
 app = Flask(__name__, template_folder='templates')
 app.config["SECRET_KEY"] = f"{os.urandom(24).hex()}"
-
+CORS(app, support_credentials=True)
 
 def parse_request_data():
     request_data = request.data
@@ -33,14 +33,15 @@ async def info(session, email, password, highschool):
 
 async def initialize(session, email, password, highschool):
     j_session_id, parameter_data, url = await myInfo.get_cookie(email, password, session, highschool)
-    student_id = await myInfo.main_info(highschool, j_session_id, url)
-    return j_session_id, student_id
+    student_id, users = await myInfo.main_info(highschool, j_session_id, url)
+    return j_session_id, student_id, users
 
 @app.route("/")
 async def home():
     return render_template("index.html")
 
 @app.route("/api/login", methods=["POST"])
+@cross_origin(supports_credentials=True)
 async def login():
     if request.method == "POST":
         data = {}
@@ -71,6 +72,7 @@ async def login():
 
 
 @app.route("/api/courseinfos", methods=["POST"])
+@cross_origin(supports_credentials=True)
 async def getcourseinfo():
     async with aiohttp.ClientSession() as session:
         email, password, highschool = parse_request_data()
@@ -78,7 +80,7 @@ async def getcourseinfo():
         request_data = json.loads(request_data.decode('utf-8'))
         mp = request_data["mp"]
         try:
-            j_session_id, student_id = await initialize(session, email, password, highschool)
+            j_session_id, student_id, users = await initialize(session, email, password, highschool)
         except Exception as e:
             print(e)
             return jsonify({'1': [{
@@ -105,13 +107,14 @@ async def getcourseinfo():
 
 # TODO finish a thing where you can fetch old mp grades (that were locked in)
 @app.route("/api/currentgrades", methods=["POST"])
+@cross_origin(supports_credentials=True)
 async def currentgrades():
     async with aiohttp.ClientSession() as session:
 
         email, password, highschool = parse_request_data()
         
         try:
-            j_session_id, student_id = await initialize(session, email, password, highschool)
+            j_session_id, student_id, users = await initialize(session, email, password, highschool)
         except Exception as e:
             print(e)
             return jsonify({'grades':[["N/A", "N/A", "N/A", "100", "N/A"]]})
@@ -121,13 +124,14 @@ async def currentgrades():
         return jsonify(curr_courses_grades)
 
 @app.route("/api/availableMPs", methods=["POST"])
+@cross_origin(supports_credentials=True)
 async def allMarkingPeriodsandCurrent():
     async with aiohttp.ClientSession() as session:
 
         email, password, highschool = parse_request_data()
         
         try:
-            j_session_id, student_id = await initialize(session, email, password, highschool)
+            j_session_id, student_id, users = await initialize(session, email, password, highschool)
         except Exception as e:
             print(e)
             return jsonify({'mps':["MP1", "MP2"], 'curr_mp': 'MP1'})
@@ -136,6 +140,7 @@ async def allMarkingPeriodsandCurrent():
         return jsonify(mps)
         
 @app.route("/api/loginConnection", methods=["POST"])
+@cross_origin(supports_credentials=True)
 async def checkUsernameAndPassword():
     async with aiohttp.ClientSession() as session:
         email, password, highschool = parse_request_data()

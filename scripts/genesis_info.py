@@ -29,7 +29,7 @@ class GenesisInformation():
         soup = DataExtractor(highschool_name, html, "html.parser")
         users, whereabouts, schedule = soup.both_where_sche(user)
         schedule_link, name, grade, student_id, state_id = soup.schedule(schedule)
-        return student_id
+        return student_id, users
 
     async def front_page_data(self, highschool_name, j_session_id, url, user: int = 0):
         html = await self.get(j_session_id, url)
