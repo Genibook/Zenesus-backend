@@ -140,7 +140,6 @@ async def allMarkingPeriodsandCurrent():
         return jsonify(mps)
         
 @app.route("/api/loginConnection", methods=["POST"])
-@cross_origin(supports_credentials=True)
 async def checkUsernameAndPassword():
     async with aiohttp.ClientSession() as session:
         email, password, highschool = parse_request_data()
