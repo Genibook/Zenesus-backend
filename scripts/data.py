@@ -1,7 +1,19 @@
 import bs4
 from bs4 import BeautifulSoup
 from constants.constants import my_constants
+from scripts.logger import CustomFormatter
+import logging
 
+logger = logging.getLogger("My_app")
+logger.setLevel(logging.DEBUG)
+
+# create console handler with a higher log level
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+
+ch.setFormatter(CustomFormatter())
+
+logger.addHandler(ch)
 
 class DataExtractor(BeautifulSoup):
     def __init__(self, highschool_name, html, praser="html.parser", **kwargs):
@@ -96,10 +108,13 @@ class DataExtractor(BeautifulSoup):
             teacher = grade = not_graded = email = "N/A"
 
             try:
-                teacher = row.find_all("td", recursive=False)
-                teacher = teacher[1].text.split("Email:")[0].strip()
-                email = teacher[1].text.split("Email:")[1].strip()
-            except AttributeError:
+                teacherr = row.find_all("td", recursive=False)
+                
+                email = str(teacherr[1].find("a")['href']).split("mailto:")[1].strip()
+                
+                teacher = teacherr[1].text.split("Email:")[0].strip()
+            except (AttributeError, TypeError) as error:
+                # print(error)
                 pass
 
             try:
@@ -108,16 +123,16 @@ class DataExtractor(BeautifulSoup):
                 course_name = str(row.find("td", class_="cellLeft").text).strip()
 
             try:
-                grade = str(row.find("td", class_="cellCenter", colspan="2").text).strip()
+                grade = str(row.find_all("td")[3].text).replace("\n", "").replace("\r", "").replace("%", "").strip()
             except AttributeError:
                 try:
                     not_graded = str(row.find("td", class_="cellCenter").text).strip()
                 except AttributeError:
                     pass
 
-            curr_courses_grades['grades'].append({
-                current_course: [course_name, teacher, email, grade, not_graded]
-            })
+            curr_courses_grades['grades'].append(
+                 [course_name, teacher, email, grade, not_graded]
+            )
 
 
         main_table = self.find("table", role="main")

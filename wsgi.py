@@ -40,6 +40,19 @@ async def initialize(session, email, password, highschool):
 async def home():
     return render_template("index.html")
 
+@app.route("/api/getusers", methods=["POST"])
+async def getUsers():
+    if request.method == "POST":
+        async with aiohttp.ClientSession() as session:
+            email, password, highschool = parse_request_data()
+
+        try:
+            j_session_id, student_id, users = await initialize(session, email, password, highschool)
+            return jsonify({'users':users})
+        except Exception as e:
+            print(e)
+            return jsonify({'users':"0"})
+
 @app.route("/api/login", methods=["POST"])
 async def login():
     if request.method == "POST":
@@ -52,7 +65,7 @@ async def login():
                 j_session_id, users, img_url, counselor_name, age, birthday, locker, schedule_link, name, grade, student_id, state_id = await info(
                     session, email, password, highschool)
 
-                data['users'] = users
+                # data['users'] = users
                 data['img_url'] = img_url
                 data['counselor_name'] = counselor_name
                 data['age'] = age
@@ -63,7 +76,7 @@ async def login():
                 data['grade'] = grade
                 data['student_id'] = student_id
                 data['state_id'] = state_id
-
+                print(data)
                 return jsonify(data)
             except Exception as e:
                 print(e)
@@ -107,7 +120,7 @@ async def getcourseinfo():
 @app.route("/api/currentgrades", methods=["POST"])
 async def currentgrades():
     async with aiohttp.ClientSession() as session:
-
+        
         email, password, highschool = parse_request_data()
         
         try:

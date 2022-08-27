@@ -15,7 +15,7 @@ class GenesisInformation():
         data["j_username"] = email
         data["j_password"] = password
         async with session as my_session:
-            async with my_session.post(url=my_constants[highschool_name]['j_check'], data=data) as response:
+            async with my_session.post(url=my_constants[highschool_name]['j_check'], data=data,  headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"}) as response:
                 cookie = my_session.cookie_jar.filter_cookies(my_constants[highschool_name]['j_check'])
                 j_id = str(cookie["JSESSIONID"]).split("=")[1]
 
@@ -124,7 +124,7 @@ class GenesisInformation():
         return curr_courses_grades 
 
     async def get(self, j_session_id, url, headers=None):
-        async with aiohttp.ClientSession(cookies={"JSESSIONID": j_session_id}) as session:
+        async with aiohttp.ClientSession(cookies={"JSESSIONID": j_session_id},  headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"}) as session:
             response = await session.get(url=url, params=headers)
             html = await response.text()
             return html
