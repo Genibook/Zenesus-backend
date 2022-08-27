@@ -67,6 +67,13 @@ async def login():
 
                 # data['users'] = users
                 data['img_url'] = img_url
+                
+                session = aiohttp.ClientSession()
+                
+                async with session.get(img_url) as response:
+                    print(await response.text())
+                await session.close()
+                
                 data['counselor_name'] = counselor_name
                 data['age'] = age
                 data['birthday'] = birthday

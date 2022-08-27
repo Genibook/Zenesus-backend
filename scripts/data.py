@@ -270,6 +270,6 @@ class DataExtractor(BeautifulSoup):
             }
             assignments[idx].append(data)
 
-        print(assignments)
+        # print(assignments)
 
         return assignments
