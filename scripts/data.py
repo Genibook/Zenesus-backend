@@ -142,8 +142,8 @@ class DataExtractor(BeautifulSoup):
         row_odd = table.find_all("tr", class_="listrowodd", recursive=False)
 
         rows = row_even + row_odd
-        for idx, row in enumerate(rows):
-            find_grade(row, idx)
+        for row in rows:
+            find_grade(row)
         return curr_courses_grades 
 
     def courseIds(self):
