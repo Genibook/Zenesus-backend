@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 from scripts.genesis_info import GenesisInformation
 import json
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
 
 class Storage():
     def __init__(self):
@@ -29,12 +29,25 @@ async def info(session, email, password, highschool):
     j_session_id, parameter_data, url = await myInfo.get_cookie(email, password, session, highschool)
     front_page_data = await myInfo.front_page_data(highschool, j_session_id, url)
     users, img_url, counselor_name, age, birthday, locker, schedule_link, name, grade, student_id, state_id = front_page_data
+    # response = await myInfo.get_image(j_session_id, img_url)
+    #print("getting image")
+    # buffer = b""
+    # async for data, end_of_http_chunk in response.content.iter_chunks():
+    #     print("adding data")
+    #     buffer += data
+    #     if end_of_http_chunk:
+    #         print(buffer)
+    #         buffer = b""
+    # async for line in response.content:
+    #     print(line)
+    # print("done")
+    # print(await response.content.total_bytes)
     return j_session_id, users, img_url, counselor_name, age, birthday, locker, schedule_link, name, grade, student_id, state_id
 
 async def initialize(session, email, password, highschool):
     j_session_id, parameter_data, url = await myInfo.get_cookie(email, password, session, highschool)
-    student_id, users = await myInfo.main_info(highschool, j_session_id, url)
-    return j_session_id, student_id, users
+    student_id, users, grade = await myInfo.main_info(highschool, j_session_id, url)
+    return j_session_id, student_id, users, grade
 
 @app.route("/")
 async def home():
@@ -47,7 +60,7 @@ async def getUsers():
             email, password, highschool = parse_request_data()
 
         try:
-            j_session_id, student_id, users = await initialize(session, email, password, highschool)
+            j_session_id, student_id, users, grade = await initialize(session, email, password, highschool)
             return jsonify({'users':users})
         except Exception as e:
             print(e)
@@ -66,14 +79,7 @@ async def login():
                     session, email, password, highschool)
 
                 # data['users'] = users
-                data['img_url'] = img_url
-                
-                session = aiohttp.ClientSession()
-                
-                async with session.get(img_url) as response:
-                    print(await response.text())
-                await session.close()
-                
+                data['img_url'] = img_url   
                 data['counselor_name'] = counselor_name
                 data['age'] = age
                 data['birthday'] = birthday
@@ -83,7 +89,7 @@ async def login():
                 data['grade'] = grade
                 data['student_id'] = student_id
                 data['state_id'] = state_id
-                print(data)
+                # print(data)
                 return jsonify(data)
             except Exception as e:
                 print(e)
@@ -98,7 +104,7 @@ async def getcourseinfo():
         request_data = json.loads(request_data.decode('utf-8'))
         mp = request_data["mp"]
         try:
-            j_session_id, student_id, users = await initialize(session, email, password, highschool)
+            j_session_id, student_id, users, grade = await initialize(session, email, password, highschool)
         except Exception as e:
             print(e)
             return jsonify({'1': [{
@@ -129,14 +135,21 @@ async def currentgrades():
     async with aiohttp.ClientSession() as session:
         
         email, password, highschool = parse_request_data()
+        request_data = request.data
+        request_data = json.loads(request_data.decode('utf-8'))
+        mp = request_data["mp"]
         
         try:
-            j_session_id, student_id, users = await initialize(session, email, password, highschool)
+            j_session_id, student_id, users, gradee = await initialize(session, email, password, highschool)
+            grade = gradee
         except Exception as e:
             print(e)
             return jsonify({'grades':[["N/A", "N/A", "N/A", "100", "N/A"]]})
-
-        curr_courses_grades  = await myInfo.current_grades(highschool, j_session_id, student_id)
+        
+        curr_courses_grades  = await myInfo.current_grades(highschool, j_session_id, student_id, mp,  int(grade))
+        
+        
+            
 
         return jsonify(curr_courses_grades)
 
@@ -147,7 +160,7 @@ async def allMarkingPeriodsandCurrent():
         email, password, highschool = parse_request_data()
         
         try:
-            j_session_id, student_id, users = await initialize(session, email, password, highschool)
+            j_session_id, student_id, users, grade = await initialize(session, email, password, highschool)
         except Exception as e:
             print(e)
             return jsonify({'mps':["MP1", "MP2"], 'curr_mp': 'MP1'})

@@ -29,7 +29,7 @@ class GenesisInformation():
         soup = DataExtractor(highschool_name, html, "html.parser")
         users, whereabouts, schedule = soup.both_where_sche(user)
         schedule_link, name, grade, student_id, state_id = soup.schedule(schedule)
-        return student_id, users
+        return student_id, users, grade
 
     async def front_page_data(self, highschool_name, j_session_id, url, user: int = 0):
         html = await self.get(j_session_id, url)
@@ -109,22 +109,42 @@ class GenesisInformation():
 
         return course_data
 
-    async def current_grades(self, highschool_name, j_session_id, student_id: int):
+    async def current_grades(self, highschool_name, j_session_id, student_id: int, mp: str, grade: int=10):
         data = {
-            "tab1": "studentdata",
-            "tab2": "gradebook",
-            "tab3": "weeklysummary",
-            "action": "form",
-            "studentid": student_id
-        }
+                "tab1": "studentdata",
+                "tab2": "gradebook",
+                "tab3": "weeklysummary",
+                "action": "form",
+                "studentid": student_id,
+                "mpToView":mp
+            }
         url = my_constants[highschool_name]['root'] + "/genesis/parents"
         html = await self.get(j_session_id, url, data)
         soup = DataExtractor(highschool_name, html, "html.parser")
         curr_courses_grades  = soup.current_grades()
         return curr_courses_grades 
+        # else:
+        #     data = {
+        #         "tab1": "studentdata",
+        #         "tab2": "gradebook",
+        #         "tab3": "weeklysummary",
+        #         "action": "form",
+        #         "studentid": student_id,
+        #         "mpToView":mp
+        #     }
+        #     url = my_constants[highschool_name]['root'] + "/genesis/parents"
+        #     html = await self.get(j_session_id, url, data)
+        #     soup = DataExtractor(highschool_name, html, "html.parser")
+        #     curr_courses_grades  = soup.current_grades()
+        #     return curr_courses_grades 
 
-    async def get(self, j_session_id, url, headers=None):
+    async def get(self, j_session_id: str, url: str, headers=None):
         async with aiohttp.ClientSession(cookies={"JSESSIONID": j_session_id},  headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"}) as session:
             response = await session.get(url=url, params=headers)
             html = await response.text()
             return html
+
+    async def get_image(self, j_session_id: str, url: str, headers=None):
+        async with aiohttp.ClientSession(cookies={"JSESSIONID": j_session_id},  headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"}) as session:
+            response = await session.get(url=url, params=headers)
+            return response

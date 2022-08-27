@@ -104,7 +104,7 @@ class DataExtractor(BeautifulSoup):
             "grades": []
         }
 
-        def find_grade(row, current_course):
+        def find_grade(row):
             teacher = grade = not_graded = email = "N/A"
 
             try:
