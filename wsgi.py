@@ -278,31 +278,36 @@ async def getAllGpasIfHighschooler():
         curr_courses_grades, courseWeights = myInfo.getGpas(
             highschool, j_session_id, student_id, mp, grade
         )
-        totalGrade = 1
-        totalWeightedGrade = 1
-        totalWeights = 1
+        totalGrade = 0
+        totalWeightedGrade = 0
+        totalWeights = 0
         names_of_courses = []
         for course_weight in courseWeights:
             names_of_courses.append(course_weight["name"])
         for grade_data in curr_courses_grades["grades"]:
-            name = grade_data[0]
-            grade = float(grade_data[3].replace("%", ""))
-        try:
-            idx = names_of_courses.index(name)
-            weight = courseWeights[idx]["weight"]
-            totalWeights += weight
-            if (
-                "AP" in name
-                or "honors" in str(name).lower()
-                or str(name).startswith("H-")
+            if not (
+                "not graded" in grade_data[3].replace("%", "").lower()
+                or "n/a" in grade_data[3].replace("%", "").lower()
             ):
-                totalWeightedGrade += (grade + 5) * weight
-            else:
-                totalWeightedGrade += grade
-            totalGrade += grade
-        except IndexError:
-            # something went wrong --- maybe the course is not existing
-            pass
+                name = grade_data[0]
+                grade = float(grade_data[3].replace("%", ""))
+            try:
+                idx = names_of_courses.index(name)
+                weight = float(courseWeights[idx]["weight"])
+                totalWeights += weight
+                if (
+                    "AP" in name
+                    or "honors" in str(name).lower()
+                    or str(name).startswith("H-")
+                ) and (grade != 0.0):
+                    totalWeightedGrade += (grade + 5) * weight
+                else:
+                    totalWeightedGrade += grade
+                totalGrade += grade
+            except IndexError:
+                # something went wrong --- maybe the course is not existing
+                pass
+            # print(totalWeights, totalWeightedGrade, totalGrade)
 
         weightedGpa = round(totalWeightedGrade / totalWeights, 2)
         unweightedGpa = round(totalGrade / totalWeights, 2)
