@@ -15,6 +15,7 @@ ch.setFormatter(CustomFormatter())
 
 logger.addHandler(ch)
 
+
 class DataExtractor(BeautifulSoup):
     def __init__(self, highschool_name, html, praser="html.parser", **kwargs):
         super().__init__(html, praser, **kwargs)
@@ -28,8 +29,8 @@ class DataExtractor(BeautifulSoup):
         table = main_row.find("table", class_="list")
         tr = table.find("tr", class_="listheading")
         td = tr.find("td", class_="cellCenter")
-        curr_mp = td.find_all('option', selected=True)[0]
-        return str(curr_mp.attrs['value'])
+        curr_mp = td.find_all("option", selected=True)[0]
+        return str(curr_mp.attrs["value"])
 
     def allMarkingPeriod(self):
         vals = []
@@ -38,9 +39,9 @@ class DataExtractor(BeautifulSoup):
         table = main_row.find("table", class_="list")
         tr = table.find("tr", class_="listheading")
         td = tr.find("td", class_="cellCenter")
-        mps = td.find_all('option')
+        mps = td.find_all("option")
         for mp in mps:
-            vals.append(mp.attrs['value'])
+            vals.append(mp.attrs["value"])
         return vals
 
     def both_where_sche(self, user):
@@ -60,8 +61,8 @@ class DataExtractor(BeautifulSoup):
         img_url, counselor_name, age, locker, birthday = None, None, None, None, None
         for idx, table_row in enumerate(table_rows):
             if idx == 0:
-                image_src = table_row.find("img").attrs['src']
-                img_url = my_constants[self.highschool_name]['root'] + image_src
+                image_src = table_row.find("img").attrs["src"]
+                img_url = my_constants[self.highschool_name]["root"] + image_src
             if idx == 2:
                 try:
                     counselor_name = str(table_row.text).split(":")[1].strip()
@@ -80,7 +81,11 @@ class DataExtractor(BeautifulSoup):
 
         table = schedule.find("table", style="margin: auto; min-width: 500px;")
         td_a = table.find_all("td", class_="cellLeft", style="border: 0;")[0].find("a")
-        schedule_link = my_constants[self.highschool_name]['root'] + "/genesis/" + str(td_a.attrs['href'])
+        schedule_link = (
+            my_constants[self.highschool_name]["root"]
+            + "/genesis/"
+            + str(td_a.attrs["href"])
+        )
 
         table = schedule.find("table")
         rows = table.find_all("tr")
@@ -100,18 +105,16 @@ class DataExtractor(BeautifulSoup):
         return (schedule_link, name, grade, student_id, state_id)
 
     def current_grades(self):
-        curr_courses_grades  = {
-            "grades": []
-        }
+        curr_courses_grades = {"grades": []}
 
         def find_grade(row):
             teacher = grade = not_graded = email = "N/A"
 
             try:
                 teacherr = row.find_all("td", recursive=False)
-                
-                email = str(teacherr[1].find("a")['href']).split("mailto:")[1].strip()
-                
+
+                email = str(teacherr[1].find("a")["href"]).split("mailto:")[1].strip()
+
                 teacher = teacherr[1].text.split("Email:")[0].strip()
             except (AttributeError, TypeError) as error:
                 # print(error)
@@ -123,17 +126,22 @@ class DataExtractor(BeautifulSoup):
                 course_name = str(row.find("td", class_="cellLeft").text).strip()
 
             try:
-                grade = str(row.find_all("td")[3].text).replace("\n", "").replace("\r", "").replace("%", "").strip()
+                grade = (
+                    str(row.find_all("td")[3].text)
+                    .replace("\n", "")
+                    .replace("\r", "")
+                    .replace("%", "")
+                    .strip()
+                )
             except AttributeError:
                 try:
                     not_graded = str(row.find("td", class_="cellCenter").text).strip()
                 except AttributeError:
                     pass
 
-            curr_courses_grades['grades'].append(
-                 [course_name, teacher, email, grade, not_graded]
+            curr_courses_grades["grades"].append(
+                [course_name, teacher, email, grade, not_graded]
             )
-
 
         main_table = self.find("table", role="main")
         main_row = main_table.find_all("tr")[1]
@@ -144,23 +152,28 @@ class DataExtractor(BeautifulSoup):
         rows = row_even + row_odd
         for row in rows:
             find_grade(row)
-        return curr_courses_grades 
+        return curr_courses_grades
 
     def courseIds(self):
         course_list = []
 
         def get_course_and_id(row):
             try:
-                row_data = str(row.find("td").find("span").attrs['onclick']).split("(")[1].strip(";").split(",")[
-                    1].strip(
-                    "'").strip(")").strip("'").split(":")
+                row_data = (
+                    str(row.find("td").find("span").attrs["onclick"])
+                    .split("(")[1]
+                    .strip(";")
+                    .split(",")[1]
+                    .strip("'")
+                    .strip(")")
+                    .strip("'")
+                    .split(":")
+                )
                 row_course_id = row_data[0]
                 row_course_section = row_data[1]
 
                 course_name = str(row.find("td").find("span").find("u").text).strip()
-                data = {
-                    f"{course_name}": [row_course_id, row_course_section]
-                }
+                data = {f"{course_name}": [row_course_id, row_course_section]}
 
                 course_list.append(data)
             except AttributeError:
@@ -180,7 +193,6 @@ class DataExtractor(BeautifulSoup):
         return course_list
 
     def course_work(self, course_name):
-
         def day_classifier(day: str):
             if day == "Mon":
                 return "Monday"
@@ -208,8 +220,39 @@ class DataExtractor(BeautifulSoup):
         row_odd = table.find_all("tr", class_="listrowodd", height="25px")
         rows = row_even + row_odd
 
-        course_namee, mp, dayname, full_dayname, date, full_date, teacher, category, assignment, description, grade_percent, grade_num, comment, prev, docs = \
-            None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+        (
+            course_namee,
+            mp,
+            dayname,
+            full_dayname,
+            date,
+            full_date,
+            teacher,
+            category,
+            assignment,
+            description,
+            grade_percent,
+            grade_num,
+            comment,
+            prev,
+            docs,
+        ) = (
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+        )
         course_namee = course_name
         assignments = {
             course_namee: [],
@@ -240,10 +283,22 @@ class DataExtractor(BeautifulSoup):
                 category = data[3].text.strip().split("\n\n\n\n\n\n\n\r\n")[1].strip()
                 assignment = data[4].find("b").text.strip()
                 if not "Comment from" and "\nClose" in description:
-                    description = data[4].find("div").text.strip().replace("\r", " ").replace("\n", " ")
+                    description = (
+                        data[4]
+                        .find("div")
+                        .text.strip()
+                        .replace("\r", " ")
+                        .replace("\n", " ")
+                    )
                 grade_percent = data[5].find("div").text.strip()
-                grade_num = str(data[5].text).replace(grade_percent, "").replace("\r", "").replace("\n", "").replace(
-                    " ", "").replace("%", "")
+                grade_num = (
+                    str(data[5].text)
+                    .replace(grade_percent, "")
+                    .replace("\r", "")
+                    .replace("\n", "")
+                    .replace(" ", "")
+                    .replace("%", "")
+                )
 
                 comment = str(data[6].find("div").find("div").text).strip()
                 prev = data[7].text.strip()
@@ -266,10 +321,43 @@ class DataExtractor(BeautifulSoup):
                 "grade_num": grade_num,
                 "comment": comment,
                 "prev": prev,
-                "docs": docs
+                "docs": docs,
             }
             assignments[idx].append(data)
 
         # print(assignments)
 
         return assignments
+
+    def findCourseWeight(self, grade: int = 10):
+
+        weights = []
+
+        def find_weights(tr, idx):
+            if grade >= 9:
+                tds = tr.find_all("td")
+                courseName = str(tds[0].text).strip("\n").strip("\r").strip()
+                weight = str(tds[idx].text).strip("\n").strip("\r").strip()
+                return {"name": courseName, "weight": weight}
+            elif grade < 9:
+                tds = tr.find_all("td")
+                courseName = str(tds[0].text).strip("\n").strip("\r").strip()
+                return {"name": courseName, "weight": "5.00"}
+
+        idx = 8
+        main_table = self.find("table", role="main")
+        main_row = main_table.find_all("tr")[1]
+        table = main_row.find("table", class_="list")
+        row_heading = table.find("tr")
+        row_even = table.find_all("tr", class_="listroweven")
+        row_odd = table.find_all("tr", class_="listrowodd")
+        cells = row_heading.find_all("td")
+        for idxx, cell in enumerate(cells):
+            if str(cell.text).strip() == "Att.":
+                idx = idxx
+
+        rows = row_even + row_odd
+        for row in rows:
+            weights.append(find_weights(row, idx))
+
+        return weights
