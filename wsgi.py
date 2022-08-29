@@ -79,7 +79,10 @@ async def initialize(session, email, password, highschool):
     j_session_id, parameter_data, url = await myInfo.get_cookie(
         email, password, session, highschool
     )
-    student_id, users, grade = await myInfo.main_info(highschool, j_session_id, url)
+    student_id, users, grade, name = await myInfo.main_info(
+        highschool, j_session_id, url
+    )
+    grade = float(grade)
     return j_session_id, student_id, users, grade
 
 
@@ -95,7 +98,7 @@ async def getUsers():
             email, password, highschool = parse_request_data()
 
         try:
-            j_session_id, student_id, users, grade = await initialize(
+            j_session_id, student_id, users, grade, name = await initialize(
                 session, email, password, highschool
             )
             return jsonify({"users": users})
@@ -167,7 +170,7 @@ async def getcourseinfo():
         request_data = json.loads(request_data.decode("utf-8"))
         mp = request_data["mp"]
         try:
-            j_session_id, student_id, users, grade = await initialize(
+            j_session_id, student_id, users, grade, name = await initialize(
                 session, email, password, highschool
             )
         except Exception as e:
@@ -214,7 +217,7 @@ async def currentgrades():
         mp = request_data["mp"]
 
         try:
-            j_session_id, student_id, users, gradee = await initialize(
+            j_session_id, student_id, users, gradee, name = await initialize(
                 session, email, password, highschool
             )
             grade = gradee
@@ -223,7 +226,10 @@ async def currentgrades():
             return jsonify({"grades": [["N/A", "N/A", "N/A", "100", "N/A"]]})
 
         curr_courses_grades = await myInfo.current_grades(
-            highschool, j_session_id, student_id, mp, int(grade)
+            highschool,
+            j_session_id,
+            student_id,
+            mp,
         )
         return jsonify(curr_courses_grades)
 
@@ -235,7 +241,7 @@ async def allMarkingPeriodsandCurrent():
         email, password, highschool = parse_request_data()
 
         try:
-            j_session_id, student_id, users, grade = await initialize(
+            j_session_id, student_id, users, grade, name = await initialize(
                 session, email, password, highschool
             )
         except Exception as e:
@@ -268,14 +274,14 @@ async def getAllGpasIfHighschooler():
         request_data = json.loads(request_data.decode("utf-8"))
         mp = request_data["mp"]
         try:
-            j_session_id, student_id, users, grade = await initialize(
+            j_session_id, student_id, users, grade, name_of_student = await initialize(
                 session, email, password, highschool
             )
         except Exception as e:
             print(e)
             return jsonify({"code": 401, "message": "invalid username/password"})
 
-        curr_courses_grades, courseWeights = myInfo.getGpas(
+        curr_courses_grades, courseWeights = await myInfo.getGpas(
             highschool, j_session_id, student_id, mp, grade
         )
         totalGrade = 0
@@ -285,12 +291,18 @@ async def getAllGpasIfHighschooler():
         for course_weight in courseWeights:
             names_of_courses.append(course_weight["name"])
         for grade_data in curr_courses_grades["grades"]:
-            if not (
-                "not graded" in grade_data[3].replace("%", "").lower()
-                or "n/a" in grade_data[3].replace("%", "").lower()
-            ):
+            if "n/a" in grade_data[3].replace("%", "").lower():
+                continue
+            elif "no grades" in grade_data[3].replace("%", "").lower():
+                # assuming that if it is no grades, the entire thing is no grades
+                return jsonify({"weighted gpa": 0.0, "unweighted gpa": 0.0})
+
+            elif "not graded" in grade_data[3].replace("%", "").lower():
+                continue
+            else:
                 name = grade_data[0]
                 grade = float(grade_data[3].replace("%", ""))
+
             try:
                 idx = names_of_courses.index(name)
                 weight = float(courseWeights[idx]["weight"])

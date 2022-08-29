@@ -1,19 +1,7 @@
 import bs4
 from bs4 import BeautifulSoup
 from constants.constants import my_constants
-from scripts.logger import CustomFormatter
-import logging
 
-logger = logging.getLogger("My_app")
-logger.setLevel(logging.DEBUG)
-
-# create console handler with a higher log level
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-
-ch.setFormatter(CustomFormatter())
-
-logger.addHandler(ch)
 
 
 class DataExtractor(BeautifulSoup):
