@@ -58,5 +58,8 @@ async def initialize(session, email: str, password: str, highschool: str, user: 
     student_id, users, grade, name = await myInfo.main_info(
         highschool, j_session_id, url, user
     )
-    grade = float(grade)
+    try:
+        grade = float(grade)
+    except SyntaxError:
+        grade = float(grade[1])
     return j_session_id, student_id, users, grade, name
