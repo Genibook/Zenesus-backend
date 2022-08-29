@@ -1,10 +1,10 @@
 from flask import Flask, jsonify, request, render_template
 import aiohttp
 import os
-from dotenv import load_dotenv
 from scripts.genesis_info import GenesisInformation
 import json
 from flask_cors import CORS
+from scripts.utils import info, initialize, parse_request_data
 
 
 class Storage:
@@ -12,78 +12,10 @@ class Storage:
         pass
 
 
-load_dotenv()
 myInfo = GenesisInformation()
 app = Flask(__name__, template_folder="templates")
 app.config["SECRET_KEY"] = f"{os.urandom(24).hex()}"
 CORS(app, support_credentials=True)
-
-
-def parse_request_data():
-    request_data = request.data
-    request_data = json.loads(request_data.decode("utf-8"))
-    email = request_data["email"]
-    password = request_data["password"]
-    highschool = request_data["highschool"]
-    return email, password, highschool
-
-
-async def info(session, email, password, highschool):
-    j_session_id, parameter_data, url = await myInfo.get_cookie(
-        email, password, session, highschool
-    )
-    front_page_data = await myInfo.front_page_data(highschool, j_session_id, url)
-    (
-        users,
-        img_url,
-        counselor_name,
-        age,
-        birthday,
-        locker,
-        schedule_link,
-        name,
-        grade,
-        student_id,
-        state_id,
-    ) = front_page_data
-    # response = await myInfo.get_image(j_session_id, img_url)
-    # print("getting image")
-    # buffer = b""
-    # async for data, end_of_http_chunk in response.content.iter_chunks():
-    #     print("adding data")
-    #     buffer += data
-    #     if end_of_http_chunk:
-    #         print(buffer)
-    #         buffer = b""
-    # async for line in response.content:
-    #     print(line)
-    # print("done")
-    # print(await response.content.total_bytes)
-    return (
-        j_session_id,
-        users,
-        img_url,
-        counselor_name,
-        age,
-        birthday,
-        locker,
-        schedule_link,
-        name,
-        grade,
-        student_id,
-        state_id,
-    )
-
-
-async def initialize(session, email, password, highschool):
-    j_session_id, parameter_data, url = await myInfo.get_cookie(
-        email, password, session, highschool
-    )
-    student_id, users, grade, name = await myInfo.main_info(
-        highschool, j_session_id, url
-    )
-    grade = float(grade)
-    return j_session_id, student_id, users, grade
 
 
 @app.route("/")
@@ -95,11 +27,11 @@ async def home():
 async def getUsers():
     if request.method == "POST":
         async with aiohttp.ClientSession() as session:
-            email, password, highschool = parse_request_data()
+            email, password, highschool, user = parse_request_data()
 
         try:
             j_session_id, student_id, users, grade, name = await initialize(
-                session, email, password, highschool
+                session, email, password, highschool, user
             )
             return jsonify({"users": users})
         except Exception as e:
@@ -113,7 +45,7 @@ async def login():
         data = {}
         async with aiohttp.ClientSession() as session:
 
-            email, password, highschool = parse_request_data()
+            email, password, highschool, user = parse_request_data()
 
             try:
                 (
@@ -129,7 +61,7 @@ async def login():
                     grade,
                     student_id,
                     state_id,
-                ) = await info(session, email, password, highschool)
+                ) = await info(session, email, password, highschool, user)
 
                 # data['users'] = users
                 data["img_url"] = img_url
@@ -165,13 +97,13 @@ async def login():
 @app.route("/api/courseinfos", methods=["POST"])
 async def getcourseinfo():
     async with aiohttp.ClientSession() as session:
-        email, password, highschool = parse_request_data()
+        email, password, highschool, user = parse_request_data()
         request_data = request.data
         request_data = json.loads(request_data.decode("utf-8"))
         mp = request_data["mp"]
         try:
             j_session_id, student_id, users, grade, name = await initialize(
-                session, email, password, highschool
+                session, email, password, highschool, user
             )
         except Exception as e:
             print(e)
@@ -206,19 +138,18 @@ async def getcourseinfo():
         return jsonify(grade_page_data)
 
 
-# TODO finish a thing where you can fetch old mp grades (that were locked in)
 @app.route("/api/currentgrades", methods=["POST"])
 async def currentgrades():
     async with aiohttp.ClientSession() as session:
 
-        email, password, highschool = parse_request_data()
+        email, password, highschool, user = parse_request_data()
         request_data = request.data
         request_data = json.loads(request_data.decode("utf-8"))
         mp = request_data["mp"]
 
         try:
             j_session_id, student_id, users, gradee, name = await initialize(
-                session, email, password, highschool
+                session, email, password, highschool, user
             )
             grade = gradee
         except Exception as e:
@@ -238,11 +169,11 @@ async def currentgrades():
 async def allMarkingPeriodsandCurrent():
     async with aiohttp.ClientSession() as session:
 
-        email, password, highschool = parse_request_data()
+        email, password, highschool, user = parse_request_data()
 
         try:
             j_session_id, student_id, users, grade, name = await initialize(
-                session, email, password, highschool
+                session, email, password, highschool, user
             )
         except Exception as e:
             print(e)
@@ -253,9 +184,9 @@ async def allMarkingPeriodsandCurrent():
 
 
 @app.route("/api/loginConnection", methods=["POST"])
-async def checkUsernameAndPassword():
+async def loginConnection():
     async with aiohttp.ClientSession() as session:
-        email, password, highschool = parse_request_data()
+        email, password, highschool, user = parse_request_data()
         try:
             j_session_id, parameter_data, url = await myInfo.get_cookie(
                 email, password, session, highschool
@@ -267,19 +198,19 @@ async def checkUsernameAndPassword():
 
 
 @app.route("/api/gpas", methods=["POST"])
-async def getAllGpasIfHighschooler():
+async def gpas():
     async with aiohttp.ClientSession() as session:
-        email, password, highschool = parse_request_data()
+        email, password, highschool, user = parse_request_data()
         request_data = request.data
         request_data = json.loads(request_data.decode("utf-8"))
         mp = request_data["mp"]
         try:
             j_session_id, student_id, users, grade, name_of_student = await initialize(
-                session, email, password, highschool
+                session, email, password, highschool, user
             )
         except Exception as e:
             print(e)
-            return jsonify({"code": 401, "message": "invalid username/password"})
+            return jsonify({"weighted gpa": 0.0, "unweighted gpa": 0.0})
 
         curr_courses_grades, courseWeights = await myInfo.getGpas(
             highschool, j_session_id, student_id, mp, grade
@@ -325,6 +256,23 @@ async def getAllGpasIfHighschooler():
         unweightedGpa = round(totalGrade / totalWeights, 2)
 
         return jsonify({"weighted gpa": weightedGpa, "unweighted gpa": unweightedGpa})
+
+
+@app.route("/api/studentNameandIds")
+async def studentNamesandIds():
+    email, password, highschool, user = parse_request_data()
+    async with aiohttp.ClientSession() as session:
+        try:
+            j_session_id, parameter_data, url = await myInfo.get_cookie(
+                email, password, session, highschool
+            )
+        except Exception as e:
+            print(e)
+            return jsonify({"ids": ["N/A"], "names": ["N/A"]})
+
+        names, ids = myInfo.getNamesandIds(highschool, j_session_id, url)
+
+        return jsonify({"names": names, "ids": ids})
 
 
 if __name__ == "__main__":

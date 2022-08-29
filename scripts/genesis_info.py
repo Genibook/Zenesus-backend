@@ -35,14 +35,14 @@ class GenesisInformation:
                 captured_data = parse_qs(parsed_url.query)
                 return j_id, captured_data, url
 
-    async def main_info(self, highschool_name, j_session_id, url, user: int = 0):
+    async def main_info(self, highschool_name, j_session_id, url, user):
         html = await self.get(j_session_id, url)
         soup = DataExtractor(highschool_name, html, "html.parser")
         users, whereabouts, schedule = soup.both_where_sche(user)
         schedule_link, name, grade, student_id, state_id = soup.schedule(schedule)
         return student_id, users, grade, name
 
-    async def front_page_data(self, highschool_name, j_session_id, url, user: int = 0):
+    async def front_page_data(self, highschool_name, j_session_id, url, user):
         html = await self.get(j_session_id, url)
         soup = DataExtractor(highschool_name, html, "html.parser")
         users, whereabouts, schedule = soup.both_where_sche(user)
@@ -201,6 +201,22 @@ class GenesisInformation:
         couresWeights = soup.findCourseWeight(grade)
 
         return curr_courses_grades, couresWeights
+
+    async def getNamesandIds(
+        self, highschool_name:str, j_session_id:str, url:str, user: int = 0
+    ):
+        ids = []
+        names = []  
+        html = await self.get(j_session_id, url)
+        soup = DataExtractor(highschool_name, html, "html.parser")
+        users, whereabouts, schedule = soup.both_where_sche(user)
+        
+        for i in range(users):
+            users, whereabouts, schedule = soup.both_where_sche(i)
+            schedule_link, name, grade, student_id, state_id = soup.schedule(schedule)
+            ids.append(student_id)
+            names.append(name)
+        return names, ids
 
     async def get(self, j_session_id: str, url: str, headers=None):
         async with aiohttp.ClientSession(
