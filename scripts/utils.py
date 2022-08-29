@@ -20,8 +20,8 @@ async def info(session, email, password, highschool, user: int):
     j_session_id, parameter_data, url = await myInfo.get_cookie(
         email, password, session, highschool
     )
+
     (
-        j_session_id,
         users,
         img_url,
         counselor_name,
@@ -59,4 +59,4 @@ async def initialize(session, email: str, password: str, highschool: str, user: 
         highschool, j_session_id, url, user
     )
     grade = float(grade)
-    return j_session_id, student_id, users, grade
+    return j_session_id, student_id, users, grade, name

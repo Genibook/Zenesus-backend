@@ -258,7 +258,7 @@ async def gpas():
         return jsonify({"weighted gpa": weightedGpa, "unweighted gpa": unweightedGpa})
 
 
-@app.route("/api/studentNameandIds")
+@app.route("/api/studentNameandIds", methods=["POST"])
 async def studentNamesandIds():
     email, password, highschool, user = parse_request_data()
     async with aiohttp.ClientSession() as session:
@@ -270,7 +270,7 @@ async def studentNamesandIds():
             print(e)
             return jsonify({"ids": ["N/A"], "names": ["N/A"]})
 
-        names, ids = myInfo.getNamesandIds(highschool, j_session_id, url)
+        names, ids = await myInfo.getNamesandIds(highschool, j_session_id, url)
 
         return jsonify({"names": names, "ids": ids})
 
