@@ -79,8 +79,8 @@ async def login():
                 data["grade"] = grade
                 data["student_id"] = student_id
                 data["state_id"] = state_id
-                data['image64'] = image64.decode('utf-8')
-                
+                data["image64"] = image64.decode("utf-8")
+
                 # print(data)
                 return jsonify(data)
             except Exception as e:
@@ -97,7 +97,7 @@ async def login():
                         "locker": "N/A",
                         "counselor_name": "N/A",
                         "id": 107600,
-                        'image64': "N/A"
+                        "image64": "N/A",
                     }
                 )
 

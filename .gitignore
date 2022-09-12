@@ -136,3 +136,4 @@ dmypy.json
 Scrape.py
 /tests/
 tests.py
+.vercel
