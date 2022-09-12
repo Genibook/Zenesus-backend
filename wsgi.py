@@ -245,15 +245,20 @@ async def gpas():
             try:
                 idx = names_of_courses.index(name)
                 weight = float(courseWeights[idx]["weight"])
-                totalWeights += weight
+                
                 if (
                     "AP" in name
                     or "honors" in str(name).lower()
                     or str(name).startswith("H-")
-                ) and (grade != 0.0):
+                ) :
                     totalWeightedGrade += (grade + 5) * weight
-                else:
+                    totalWeights += weight
+                elif grade != 0.0:
                     totalWeightedGrade += grade
+                    totalWeights += weight
+                else:
+                    # means grade == 0.0
+                    pass
                 totalGrade += grade
             except IndexError:
                 # something went wrong --- maybe the course is not existing
