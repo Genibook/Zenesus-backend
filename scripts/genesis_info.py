@@ -229,12 +229,3 @@ class GenesisInformation:
             html = await response.text()
             return html
 
-    async def get_image(self, j_session_id: str, url: str, headers=None):
-        async with aiohttp.ClientSession(
-            cookies={"JSESSIONID": j_session_id},
-            headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"
-            },
-        ) as session:
-            response = await session.get(url=url, params=headers)
-            return response

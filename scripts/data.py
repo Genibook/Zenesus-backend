@@ -192,8 +192,12 @@ class DataExtractor(BeautifulSoup):
                 return "Thursday"
             elif day == "Fri":
                 return "Friday"
+            elif day == "Sat":
+                return "Saturday"
+            elif day == "Sun":
+                return "Sunday"
             else:
-                return 0
+                return ""
 
         main_table = self.find("table", role="main")
         main_row = main_table.find_all("tr")[1]
@@ -278,7 +282,7 @@ class DataExtractor(BeautifulSoup):
                         .replace("\r", " ")
                         .replace("\n", " ")
                     )
-                grade_percent = data[5].find("div").text.strip()
+                grade_percent = data[5].find("div").text.strip().replace("%", "")
                 grade_num = (
                     str(data[5].text)
                     .replace(grade_percent, "")
@@ -311,7 +315,7 @@ class DataExtractor(BeautifulSoup):
                 "prev": prev,
                 "docs": docs,
             }
-            assignments[idx].append(data)
+            assignments[course_namee].append(data)
 
         # print(assignments)
 

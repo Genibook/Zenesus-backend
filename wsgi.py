@@ -49,6 +49,7 @@ async def login():
 
             try:
                 (
+                    image64,
                     j_session_id,
                     users,
                     img_url,
@@ -61,9 +62,13 @@ async def login():
                     grade,
                     student_id,
                     state_id,
-                ) = await info(session, email, password, highschool, user)
+                ) = await info(session, email, password, highschool, user, "image")
 
                 # data['users'] = users
+                # print("-------")
+                # with open("thing.txt", "w") as f:
+                #     f.write(image64.decode("utf-8"))
+                # print(image64)
                 data["img_url"] = img_url
                 data["counselor_name"] = counselor_name
                 data["age"] = age
@@ -74,6 +79,7 @@ async def login():
                 data["grade"] = grade
                 data["student_id"] = student_id
                 data["state_id"] = state_id
+                
                 # print(data)
                 return jsonify(data)
             except Exception as e:
@@ -134,7 +140,7 @@ async def getcourseinfo():
         grade_page_data = await myInfo.grade_page_data(
             highschool, j_session_id, student_id, mp
         )
-
+        print(grade_page_data)
         return jsonify(grade_page_data)
 
 
