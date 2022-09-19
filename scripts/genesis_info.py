@@ -72,21 +72,33 @@ class GenesisInformation:
         courseid: str,
         coursection: str,
         course_name: str,
+        mode: str = "coursework"
     ):
-        data = {
-            "tab1": "studentdata",
-            "tab2": "gradebook",
-            "tab3": "coursesummary",
-            "studentid": student_id,
-            "mp": mp,
-            "action": "form",
-            "courseCode": courseid,
-            "courseSection": coursection,
-        }
+        if mode == "coursework":
+            data = {
+                "tab1": "studentdata",
+                "tab2": "gradebook",
+                "tab3": "coursesummary",
+                "studentid": student_id,
+                "mp": mp,
+                "action": "form",
+                "courseCode": courseid,
+                "courseSection": coursection,
+            }
+        else:
+            data = {
+                "tab1": "studentdata",
+                "tab2": "gradebook",
+                "tab3": "listassignments",
+                "studentid": student_id,
+                "dataRange": mp,
+                "action": "form",
+                "courseAndSection": f"{courseid}:{coursection}",
+            }
 
         html = await self.get(j_session_id, url, data)
         soup = DataExtractor(highschool_name, html, "html.parser")
-        assignments = soup.course_work(course_name)
+        assignments = soup.course_work(course_name, mode)
         return assignments
 
     async def allMarkingPeriods(self, highschool_name, j_session_id, student_id: int):
@@ -106,7 +118,7 @@ class GenesisInformation:
         return {"mps": mps, "curr_mp": currmp}
 
     async def grade_page_data(
-        self, highschool_name, j_session_id, student_id: int, mp: str = None
+        self, highschool_name, j_session_id, student_id: int, mp: str = None, mode="coursework"
     ):
         def Merge(dict1, dict2):
             dict2.update(dict1)
@@ -145,6 +157,8 @@ class GenesisInformation:
                     course_id,
                     section,
                     course_name,
+                    mode
+                    
                 )
                 course_data = Merge(course_data, assignments)
 

@@ -64,11 +64,6 @@ async def login():
                     state_id,
                 ) = await info(session, email, password, highschool, user, "image")
 
-                # data['users'] = users
-                # print("-------")
-                # with open("thing.txt", "w") as f:
-                #     f.write(image64.decode("utf-8"))
-                # print(image64)
                 data["img_url"] = img_url
                 data["counselor_name"] = counselor_name
                 data["age"] = age
@@ -81,7 +76,6 @@ async def login():
                 data["state_id"] = state_id
                 data["image64"] = image64.decode("utf-8")
 
-                # print(data)
                 return jsonify(data)
             except Exception as e:
                 print(e)
@@ -117,7 +111,7 @@ async def getcourseinfo():
             print(e)
             return jsonify(
                 {
-                    "1": [
+                    "RANDOM COURSE NAME": [
                         {
                             "course_name": "N/A",
                             "mp": "N/A",
@@ -142,7 +136,7 @@ async def getcourseinfo():
         grade_page_data = await myInfo.grade_page_data(
             highschool, j_session_id, student_id, mp
         )
-        print(grade_page_data)
+       #  print(grade_page_data)
         return jsonify(grade_page_data)
 
 
@@ -261,7 +255,7 @@ async def gpas():
                 # something went wrong --- maybe the course is not existing
                 pass
             # print(totalWeights, totalWeightedGrade, totalGrade)
-        print(totalWeightedGrade, totalGrade, totalWeights)
+        # print(totalWeightedGrade, totalGrade, totalWeights)
         weightedGpa = round(totalWeightedGrade / totalWeights, 2)
         unweightedGpa = round(totalGrade / totalWeights, 2)
 
@@ -270,7 +264,7 @@ async def gpas():
 
 @app.route("/api/studentNameandIds", methods=["POST"])
 async def studentNamesandIds():
-    email, password, highschool, user = parse_request_data()
+    email, password, highschool = parse_request_data()
     async with aiohttp.ClientSession() as session:
         try:
             j_session_id, parameter_data, url = await myInfo.get_cookie(
@@ -283,6 +277,45 @@ async def studentNamesandIds():
         names, ids = await myInfo.getNamesandIds(highschool, j_session_id, url)
 
         return jsonify({"names": names, "ids": ids})
+
+@app.route("/api/monthSchedule", methods=["GET"])
+async def getPastandNowAssignements():
+    # email, password, highschool, user = parse_request_data()
+    # mp = request_data["mp"]
+    email = request.args.get("email")
+    password = request.args.get("password")
+    highschool = request.args.get("highschool")
+    user = int(request.args.get("user"))
+    mp = request.args.get("mp")
+    async with aiohttp.ClientSession() as session:
+        try:
+            j_session_id, student_id, users, grade, name_of_student = await initialize(
+                session, email, password, highschool, user
+            )
+        except Exception as e:
+            print(e)
+            return jsonify(
+                {
+                    "RANDOM COUSE NAME": [
+                        {
+                            "course_name": "N/A",
+                            "date": "N/A",
+                            "points": "25",
+                            "category": "N/A",
+                            "assignment": "N/A",
+                            "description": "",
+                            
+                        }
+                        
+                    ]
+                }
+            )
+        
+        schedule = await myInfo.grade_page_data(
+            highschool, j_session_id, student_id, mp, "schedule"
+        )
+       #  print(grade_page_data)
+        return jsonify(schedule)
 
 
 if __name__ == "__main__":
