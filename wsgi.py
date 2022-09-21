@@ -278,15 +278,15 @@ async def studentNamesandIds():
 
         return jsonify({"names": names, "ids": ids})
 
-@app.route("/api/monthSchedule", methods=["GET"])
+@app.route("/api/monthSchedule", methods=["GET", "POST"])
 async def getPastandNowAssignements():
-    # email, password, highschool, user = parse_request_data()
-    # mp = request_data["mp"]
-    email = request.args.get("email")
-    password = request.args.get("password")
-    highschool = request.args.get("highschool")
-    user = int(request.args.get("user"))
-    mp = request.args.get("mp")
+    if request.method == "POST":
+        email, password, highschool, user = parse_request_data()
+    elif request.method == "GET":
+        email = request.args.get("email")
+        password = request.args.get("password")
+        highschool = request.args.get("highschool")
+        user = int(request.args.get("user"))
     async with aiohttp.ClientSession() as session:
         try:
             j_session_id, student_id, users, grade, name_of_student = await initialize(
@@ -312,7 +312,7 @@ async def getPastandNowAssignements():
             )
         
         schedule = await myInfo.grade_page_data(
-            highschool, j_session_id, student_id, mp, "schedule"
+            highschool, j_session_id, student_id, None, "schedule"
         )
        #  print(grade_page_data)
         return jsonify(schedule)

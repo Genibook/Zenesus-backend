@@ -326,8 +326,8 @@ class DataExtractor(BeautifulSoup):
                     continue
 
                 data = row.find_all("td", recursive=False)
-                if len(data) == 0:
-                    return assignments
+                if len(data) != 10:
+                    continue
 
                 del data[len(data) - 1]
                 del data[len(data) - 1]
