@@ -264,7 +264,7 @@ async def gpas():
 
 @app.route("/api/studentNameandIds", methods=["POST"])
 async def studentNamesandIds():
-    email, password, highschool = parse_request_data()
+    email, password, highschool,users = parse_request_data()
     async with aiohttp.ClientSession() as session:
         try:
             j_session_id, parameter_data, url = await myInfo.get_cookie(
