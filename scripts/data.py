@@ -361,13 +361,17 @@ class DataExtractor(BeautifulSoup):
                         description = ""
 
                     # print(data[5].text)
-                    grade_points = (
-                        data[5]
-                        .find("div")
-                        .find_all("div", recursive=False)[1]
-                        .text.replace("Assignment Pts:", "")
-                        .strip()
-                    )
+                    try:
+                        
+                        grade_points = (
+                            data[5]
+                            .find("div")
+                            .find_all("div", recursive=False)[1]
+                            .text.replace("Assignment Pts:", "")
+                            .strip()
+                        )
+                    except IndexError:
+                        continue
 
                 except AttributeError:
                     pass
