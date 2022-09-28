@@ -285,7 +285,7 @@ class DataExtractor(BeautifulSoup):
                     )
                     if grade_percent.lower()  == "missing":
                         grade_num == "Missing"
-                        grade_percent = -1
+                        grade_percent = "-1.0"
 
                     comment = str(data[6].find("div").find("div").text).strip()
                     prev = data[7].text.strip()
