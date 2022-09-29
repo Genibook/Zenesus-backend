@@ -1,3 +1,4 @@
+
 from flask import Flask, jsonify, request, render_template
 import aiohttp
 import os
@@ -316,6 +317,10 @@ async def getPastandNowAssignements():
         )
        #  print(grade_page_data)
         return jsonify(schedule)
+
+@app.route("/pp")
+def privacyPolicy():
+    return render_template("pp.html")
 
 
 if __name__ == "__main__":
