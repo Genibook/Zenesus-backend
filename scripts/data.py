@@ -309,7 +309,7 @@ class DataExtractor(BeautifulSoup):
                     except Exception as e:
                         print(e)
                         grade_percent = "0.0"
-                        grade_num = "Error - contact zenesus.gradebook@gmail.com"
+                        grade_num = "No grade"
 
                     comment = str(data[6].find("div").find("div").text).strip()
                     prev = data[7].text.strip()
