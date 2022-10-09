@@ -287,6 +287,8 @@ class DataExtractor(BeautifulSoup):
                         )
                         
                         
+                        if "x" in grade_percent:
+                            grade_percent = data[5].find_all("div")[1].text.strip().replace("%", "")
                         
                         # print(grade_percent)
                         # print(grade_num)
