@@ -274,34 +274,42 @@ class DataExtractor(BeautifulSoup):
                         "Close" in description or "\nClose" in description
                     ):
                         description = ""
-                    grade_percent = data[5].find("div").text.strip().replace("%", "")
-                    grade_num = (
-                        str(data[5].text)
-                        .replace(grade_percent, "")
-                        .replace("\r", "")
-                        .replace("\n", "")
-                        .replace(" ", "")
-                        .replace("%", "")
-                    )
                     
-                    # print(grade_percent)
-                    # print(grade_num)
-                    # print("/" in grade_percent)
-                    if grade_percent.lower()  == "missing":
-                        grade_num = "Missing"
-                        grade_percent = "-1.0"
-                    elif grade_percent.lower() == "exempt":
-                        grade_num = "Exempt"
+                    try:
+                        grade_percent = data[5].find("div").text.strip().replace("%", "")
+                        grade_num = (
+                            str(data[5].text)
+                            .replace(grade_percent, "")
+                            .replace("\r", "")
+                            .replace("\n", "")
+                            .replace(" ", "")
+                            .replace("%", "")
+                        )
+                        
+                        
+                        
+                        # print(grade_percent)
+                        # print(grade_num)
+                        # print("/" in grade_percent)
+                        if grade_percent.lower()  == "missing":
+                            grade_num = "Missing"
+                            grade_percent = "-1.0"
+                        elif grade_percent.lower() == "exempt":
+                            grade_num = "Exempt"
+                            grade_percent = "0.0"
+                        elif grade_percent.lower() == "absent":
+                            grade_num = "Absent"
+                            grade_percent = "0.0"
+                        elif grade_percent.lower()  == "incomplete":
+                            grade_num = "Incomplete"
+                            grade_percent = "-1.0"    
+                        elif not "/"  in grade_num:
+                            grade_num = grade_percent
+                            grade_percent = "0.0"
+                    except Exception as e:
+                        print(e)
                         grade_percent = "0.0"
-                    elif grade_percent.lower() == "absent":
-                        grade_num = "Absent"
-                        grade_percent = "0.0"
-                    elif grade_percent.lower()  == "incomplete":
-                        grade_num = "Incomplete"
-                        grade_percent = "-1.0"    
-                    elif not "/"  in grade_num:
-                        grade_num = grade_percent
-                        grade_percent = "0.0"
+                        grade_num = "Error - contact zenesus.gradebook@gmail.com"
 
                     comment = str(data[6].find("div").find("div").text).strip()
                     prev = data[7].text.strip()
