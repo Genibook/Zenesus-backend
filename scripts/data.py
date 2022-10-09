@@ -295,6 +295,9 @@ class DataExtractor(BeautifulSoup):
                     elif grade_percent.lower()  == "incomplete":
                         grade_num = "Incomplete"
                         grade_percent = "-1.0"    
+                    elif not "/"  in grade_percent.lower():
+                        grade_num = grade_percent
+                        grade_percent = "0.0"
 
                     comment = str(data[6].find("div").find("div").text).strip()
                     prev = data[7].text.strip()
