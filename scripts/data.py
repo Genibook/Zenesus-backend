@@ -283,6 +283,10 @@ class DataExtractor(BeautifulSoup):
                         .replace(" ", "")
                         .replace("%", "")
                     )
+                    
+                    # print(grade_percent)
+                    # print(grade_num)
+                    # print("/" in grade_percent)
                     if grade_percent.lower()  == "missing":
                         grade_num = "Missing"
                         grade_percent = "-1.0"
@@ -295,7 +299,7 @@ class DataExtractor(BeautifulSoup):
                     elif grade_percent.lower()  == "incomplete":
                         grade_num = "Incomplete"
                         grade_percent = "-1.0"    
-                    elif not "/"  in grade_percent.lower():
+                    elif not "/"  in grade_num:
                         grade_num = grade_percent
                         grade_percent = "0.0"
 
