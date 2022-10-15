@@ -76,7 +76,7 @@ async def login():
                 data["student_id"] = student_id
                 data["state_id"] = state_id
                 data["image64"] = image64.decode("utf-8")
-
+                
                 return jsonify(data)
             except Exception as e:
                 print(e)
