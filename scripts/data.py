@@ -403,16 +403,20 @@ class DataExtractor(BeautifulSoup):
                         continue
 
                 except AttributeError:
+                    
                     pass
-
-                data = {
-                    "course_name": course_namee,
-                    "date": date,
-                    "points": grade_points,
-                    "category": category,
-                    "assignment": assignment,
-                    "description": description,
-                }
+                try:
+                    
+                    data = {
+                        "course_name": course_namee,
+                        "date": date,
+                        "points": grade_points,
+                        "category": category,
+                        "assignment": assignment,
+                        "description": description,
+                    }
+                except UnboundLocalError:
+                    continue
                 assignments[course_namee].append(data)
 
             return assignments
