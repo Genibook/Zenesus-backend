@@ -399,7 +399,7 @@ class DataExtractor(BeautifulSoup):
                             .strip()
                         )
                     except IndexError:
-                        grade_points = 0.0
+                        grade_points = "0.0"
                         continue
 
                 except AttributeError:
