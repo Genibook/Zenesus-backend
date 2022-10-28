@@ -5,8 +5,7 @@ import os
 from scripts.genesis_info import GenesisInformation
 import json
 from flask_cors import CORS
-from scripts.utils import info, initialize, parse_request_data
-
+from utils.utils import info, initialize, parse_request_data
 
 class Storage:
     def __init__(self):
@@ -165,6 +164,7 @@ async def currentgrades():
             student_id,
             mp,
         )
+        
         return jsonify(curr_courses_grades)
 
 
@@ -218,6 +218,11 @@ async def gpas():
         curr_courses_grades, courseWeights = await myInfo.getGpas(
             highschool, j_session_id, student_id, mp, grade
         )
+        
+        print(mp)
+        print(curr_courses_grades)
+        
+        noGradesCounter = 0
         totalGrade = 0
         totalWeightedGrade = 0
         totalWeights = 0
@@ -229,8 +234,8 @@ async def gpas():
                 continue
             elif "no grades" in grade_data[3].replace("%", "").lower():
                 # assuming that if it is no grades, the entire thing is no grades
-                return jsonify({"weighted gpa": 0.0, "unweighted gpa": 0.0})
-
+                noGradesCounter += 1
+                
             elif "not graded" in grade_data[3].replace("%", "").lower():
                 continue
             else:
@@ -259,6 +264,9 @@ async def gpas():
         # print(totalWeightedGrade, totalGrade, totalWeights)
         weightedGpa = round(totalWeightedGrade / totalWeights, 2)
         unweightedGpa = round(totalGrade / totalWeights, 2)
+
+        if noGradesCounter+1 > len( curr_courses_grades["grades"]):
+            return jsonify({"weighted gpa": 0.0, "unweighted gpa": 0.0})
 
         return jsonify({"weighted gpa": weightedGpa, "unweighted gpa": unweightedGpa})
 

@@ -10,3 +10,17 @@ my_constants = {
       
   }
 }
+
+teacherCellNum = 2
+gradeCellNum = 5
+dateCellNum = 1
+mpCellNum = 0
+categoryCellNum = 3
+assignmentCellNum = 4
+listAssignmentDataCellsNum = 10
+commentCellNum = 6
+prevCellNum = 7
+docsCellNum = 8
+
+unNormalNotGradedCell = 2
+NormalGradedCell = 1

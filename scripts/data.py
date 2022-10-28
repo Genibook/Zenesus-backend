@@ -1,6 +1,8 @@
+from distutils.log import info
 import bs4
 from bs4 import BeautifulSoup
-from constants.constants import my_constants
+from constants.constants import *
+from utils.dataUtils import *
 
 
 class DataExtractor(BeautifulSoup):
@@ -145,61 +147,20 @@ class DataExtractor(BeautifulSoup):
 
     def courseIds(self):
         course_list = []
-
-        def get_course_and_id(row):
-            try:
-                row_data = (
-                    str(row.find("td").find("span").attrs["onclick"])
-                    .split("(")[1]
-                    .strip(";")
-                    .split(",")[1]
-                    .strip("'")
-                    .strip(")")
-                    .strip("'")
-                    .split(":")
-                )
-                row_course_id = row_data[0]
-                row_course_section = row_data[1]
-
-                course_name = str(row.find("td").find("span").find("u").text).strip()
-                data = {f"{course_name}": [row_course_id, row_course_section]}
-
-                course_list.append(data)
-            except AttributeError:
-                pass
-
         main_table = self.find("table", role="main")
         main_row = main_table.find_all("tr")[1]
         table = main_row.find("table", class_="list")
         row_even = table.find_all("tr", class_="listroweven")
         for row in row_even:
-            get_course_and_id(row)
+            course_list += get_course_and_id(row)
 
         row_odd = table.find_all("tr", class_="listrowodd")
         for row in row_odd:
-            get_course_and_id(row)
+            course_list += get_course_and_id(row)
 
         return course_list
 
-    def course_work(self, course_name, mode="coursework"):
-        def day_classifier(day: str):
-            if day == "Mon":
-                return "Monday"
-            elif day == "Tue":
-                return "Tuesday"
-            elif day == "Wed":
-                return "Wednesday"
-            elif day == "Thu":
-                return "Thursday"
-            elif day == "Fri":
-                return "Friday"
-            elif day == "Sat":
-                return "Saturday"
-            elif day == "Sun":
-                return "Sunday"
-            else:
-                return ""
-
+    def CourseWork(self, course_name:str, mode:str):
         course_namee = (
             mp
         ) = (
@@ -210,113 +171,79 @@ class DataExtractor(BeautifulSoup):
             date
         ) = (
             full_date
-        ) = (
-            teacher
-        ) = (
-            category
-        ) = (
-            assignment
-        ) = description = grade_percent = grade_num = comment = prev = docs = ""
+        ) = teacher = grade_percent = grade_num = comment = prev = docs = None
         course_namee = course_name
         assignments = {
             course_namee: [],
         }
-        if mode == "coursework":
-            main_table = self.find("table", role="main")
-            main_row = main_table.find_all("tr")[1]
-            table = main_row.find("table", class_="list")
-            dates = str(table.find("tr").find("span").text)
+        main_table = self.find_all("table", role="main")[1]
+        main_row = main_table.find_all("tr")[1]
+        table = main_row.find("table", class_="list")
+        rows = table.find_all("tr", recursive=False)
 
-            year_begin = str(dates.split("/")[2].split()[0])
-            year_end = str(dates.split("/")[4])
-            rows = table.find_all("tr", recursive=False)
-
-            for row in rows:
-                try:
-                    if row["class"] == ["listheading"]:
-                        continue
-                except KeyError:
+        for row in rows:
+            try:
+                if row["class"] == ["listheading"]:
                     continue
-                data = row.find_all("td", class_="cellLeft")
-                if len(data) != 9:
-                    continue
-                mp = str(data[0].text).strip()
-                divs = data[1].find_all("div")
+            except KeyError:
+                continue
+
+            data = row.find_all("td", recursive=False)
+            if len(data) != listAssignmentDataCellsNum:
+                continue
+
+            # point cell
+            pointCell = data[gradeCellNum]
+            pointCellDataInformation = str(pointCell.text).lower().strip().strip("\n")
+            # date cell
+            dateCell = data[dateCellNum].find_all("div")
+            date = dateCell[dateCellNum].text.strip()
+            #  a normal point cell
+            # 5/5
+            # 100%
+            # or
+            # Not Graded
+            # Assignment Pts: 5
+
+            # a unormal cell is as such
+            # 0.5x
+            # Not Graded
+            # Assignment Pts: 5
+            # or
+            # 0.5 x
+            # 5/5
+            # 100%
+
+            if (not "not graded"  in pointCellDataInformation) and (mode == "coursework"):
+                # this means that it is a percent cell e.g.
+                # 5/5
+                # 100%
+
+                mp = str(data[mpCellNum].text).strip()
+                dayname = dateCell[0].text.strip()
+                teacher = data[teacherCellNum].text.strip()
+                full_dayname = day_classifier(dayname)
+                full_date = date
+
+                category, assignment, description = basicDataExtractorFromTDCell(data)
+
+                # please reference utils/dataUtils.py
+                gradesDictionary = gradesLogic(data)
+                # grade num example: 5/5
+                grade_num = gradesDictionary["grade_num"]
+                # grade percent example: 100%
+                grade_percent = gradesDictionary["grade_percent"]
                 try:
-                    dayname = divs[0].text
-                    full_dayname = day_classifier(dayname)
-
-                    month = int(str(divs[1]).split("/")[0].strip("<div>"))
-                    if 7 >= month > 0:
-                        date = divs[1].text
-                        full_date = divs[1].text + "/" + year_end
-                    else:
-                        date = divs[1].text
-                        full_date = divs[1].text + "/" + year_begin
-                except IndexError:
+                    # this is very interesting beacuse if you look at the actual box it will be two divs and then the text 
+                    # but just getting the text should be fine as well
+                    # before: comment = str(data[commentCellNum].find("div").find("div").text).strip()
+                    # after: comment = str(data[commentCellNum].text).strip()
+                    comment = str(data[commentCellNum].text).strip()
+                except Exception as e:
+                    print("error when fetching comment, it shoud be attribute error - ", e)
                     pass
-
-                try:
-                    teacher = data[2].text.strip()
-                    category = (
-                        data[3].text.strip().split("\n\n\n\n\n\n\n\r\n")[1].strip()
-                    )
-                    assignment = data[4].find("b").text.strip()
-                    description = (
-                        data[4]
-                        .find("div")
-                        .text.strip()
-                        .replace("\r", " ")
-                        .replace("\n", " ")
-                    )
-
-                    if ("Comment from" in description) and (
-                        "Close" in description or "\nClose" in description
-                    ):
-                        description = ""
-                    
-                    try:
-                        grade_percent = data[5].find("div").text.strip().replace("%", "")
-                        grade_num = (
-                            str(data[5].text)
-                            .replace(grade_percent, "")
-                            .replace("\r", "")
-                            .replace("\n", "")
-                            .replace(" ", "")
-                            .replace("%", "")
-                        )
-                        if "x" in grade_percent:
-                            grade_percent = data[5].find_all("div")[1].text.strip().replace("%", "")
-                            
-                        grade_num = grade_num.replace(grade_percent, "")
-                        # print(grade_percent)
-                        # print(grade_num)
-                        # print("/" in grade_percent)
-                        if grade_percent.lower()  == "missing":
-                            grade_num = "Missing"
-                            grade_percent = "-1.0"
-                        elif grade_percent.lower() == "exempt":
-                            grade_num = "Exempt"
-                            grade_percent = "0.0"
-                        elif grade_percent.lower() == "absent":
-                            grade_num = "Absent"
-                            grade_percent = "0.0"
-                        elif grade_percent.lower()  == "incomplete":
-                            grade_num = "Incomplete"
-                            grade_percent = "-1.0"    
-                        elif not "/"  in grade_num:
-                            grade_num = grade_percent
-                            grade_percent = "0.0"
-                    except Exception as e:
-                        print(e)
-                        grade_percent = "0.0"
-                        grade_num = "No grade"
-
-                    comment = str(data[6].find("div").find("div").text).strip()
-                    prev = data[7].text.strip()
-                    docs = data[8].text.strip()
-                except AttributeError:
-                    pass
+                prev = data[prevCellNum].text.strip()
+                docs = data[docsCellNum].text.strip()
 
                 data = {
                     "course_name": course_namee,
@@ -337,97 +264,38 @@ class DataExtractor(BeautifulSoup):
                 }
                 assignments[course_namee].append(data)
 
-            # print(assignments)
+            elif ("not graded" in pointCellDataInformation) and (mode == "schedule"):
+                #print(pointCellDataInformation)
+                # this means that not graded is in here
+                # Not Graded
+                # Assignment Pts: 5
+                category, assignment, description = basicDataExtractorFromTDCell(data)
 
-            return assignments
-        else:
-            main_table = self.find_all("table", role="main")[1]
-            main_row = main_table.find_all("tr")[1]
-            table = main_row.find("table", class_="list")
-            rows = table.find_all("tr", recursive=False)
+                grade_points = scheduleGrades(data)
 
-            for row in rows:
-                try:
-                    if row["class"] == ["listheading"]:
-                        continue
-                except KeyError:
-                    continue
-
-                data = row.find_all("td", recursive=False)
-                if len(data) != 10:
-                    continue
-
-                del data[len(data) - 1]
-                del data[len(data) - 1]
-                del data[len(data) - 1]
-                del data[len(data) - 1]
-                if len(data) != 6:
-                    continue
-
-                ifgraded = data[5].find_all("div")
-                if len(ifgraded) == 1:
-                    continue
+                # print(course_namee, grade_points, category, assignment, description, date)
                 
-                date = data[1].find_all("div")[1].text.strip()
-                try:
-                    category = (
-                        data[3].text.strip().split("\n\n\n\n\n\n\n\r\n")[1].strip()
-                    )
-                    assignment = data[4].find("b").text.strip()
-                    description = (
-                        data[4]
-                        .find("div")
-                        .text.strip()
-                        .replace("\r", " ")
-                        .replace("\n", " ")
-                    )
-
-                    if ("Comment from" in description) and (
-                        "Close" in description or "\nClose" in description
-                    ):
-                        description = ""
-
-                    # print(data[5].text)
-                    try:
-                        
-                        
-                        grade_points = (
-                            data[5]
-                            .find("div")
-                            .find_all("div", recursive=False)[1]
-                            .text.replace("Assignment Pts:", "")
-                            .strip()
-                        )
-                        if "not" in grade_points.lower():
-                            grade_points = (
-                                data[5]
-                                .find("div")
-                                .find_all("div", recursive=False)[2]
-                                .text.replace("Assignment Pts:", "")
-                                .strip()
-                            )
-                    except IndexError:
-                        grade_points = "0 - Error fetching points"
-                        continue
-
-                except AttributeError:
-                    
+                if (
+                    (course_namee is None)
+                    or (grade_points is None)
+                    or (category is None)
+                    or (assignment is None)
+                    or (description is None)
+                    or (date is None)
+                ):
                     continue
-                
-                
-                    
                 data = {
-                        "course_name": course_namee,
-                        "date": date,
-                        "points": grade_points,
-                        "category": category,
-                        "assignment": assignment,
-                        "description": description,
+                    "course_name": course_namee,
+                    "date": date,
+                    "points": grade_points,
+                    "category": category,
+                    "assignment": assignment,
+                    "description": description,
                 }
-                
                 assignments[course_namee].append(data)
-
-            return assignments
+        
+        #print(assignments)
+        return assignments
 
     def findCourseWeight(self, grade: int = 10):
 

@@ -62,7 +62,7 @@ class GenesisInformation:
             state_id,
         )
 
-    async def course_data(
+    async def CourseData(
         self,
         highschool_name,
         j_session_id,
@@ -72,21 +72,11 @@ class GenesisInformation:
         courseid: str,
         coursection: str,
         course_name: str,
-        mode: str = "coursework"
+        mode: str
     ):
-        if mode == "coursework":
-            data = {
-                "tab1": "studentdata",
-                "tab2": "gradebook",
-                "tab3": "coursesummary",
-                "studentid": student_id,
-                "mp": mp,
-                "action": "form",
-                "courseCode": courseid,
-                "courseSection": coursection,
-            }
-        else:
-            data = {
+        if mp.lower() ==  "FG":
+            mp = "allMP"
+        data = {
                 "tab1": "studentdata",
                 "tab2": "gradebook",
                 "tab3": "listassignments",
@@ -95,10 +85,9 @@ class GenesisInformation:
                 "action": "form",
                 "courseAndSection": f"{courseid}:{coursection}",
             }
-
         html = await self.get(j_session_id, url, data)
         soup = DataExtractor(highschool_name, html, "html.parser")
-        assignments = soup.course_work(course_name, mode)
+        assignments = soup.CourseWork(course_name, mode)
         return assignments
 
     async def allMarkingPeriods(self, highschool_name, j_session_id, student_id: int):
@@ -148,7 +137,7 @@ class GenesisInformation:
             for course_name, val in course_dict.items():
                 course_id = val[0]
                 section = val[1]
-                assignments = await self.course_data(
+                assignments = await self.CourseData(
                     highschool_name,
                     j_session_id,
                     url,
