@@ -180,7 +180,7 @@ async def allMarkingPeriodsandCurrent():
             )
         except Exception as e:
             print(e)
-            return jsonify({"mps": ["MP1", "MP2"], "curr_mp": "MP1"})
+            return jsonify({"mps": ["MP1", "FG"], "curr_mp": "MP1"})
 
         mps = await myInfo.allMarkingPeriods(highschool, j_session_id, student_id)
         return jsonify(mps)

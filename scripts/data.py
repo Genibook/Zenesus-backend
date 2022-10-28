@@ -367,8 +367,7 @@ class DataExtractor(BeautifulSoup):
                 ifgraded = data[5].find_all("div")
                 if len(ifgraded) == 1:
                     continue
-
-                mp = str(data[0].text).strip()
+                
                 date = data[1].find_all("div")[1].text.strip()
                 try:
                     category = (
@@ -391,6 +390,7 @@ class DataExtractor(BeautifulSoup):
                     # print(data[5].text)
                     try:
                         
+                        
                         grade_points = (
                             data[5]
                             .find("div")
@@ -398,25 +398,33 @@ class DataExtractor(BeautifulSoup):
                             .text.replace("Assignment Pts:", "")
                             .strip()
                         )
+                        if "not" in grade_points.lower():
+                            grade_points = (
+                                data[5]
+                                .find("div")
+                                .find_all("div", recursive=False)[2]
+                                .text.replace("Assignment Pts:", "")
+                                .strip()
+                            )
                     except IndexError:
-                        grade_points = "0.0"
+                        grade_points = "0 - Error fetching points"
                         continue
 
                 except AttributeError:
                     
-                    pass
-                try:
+                    continue
+                
+                
                     
-                    data = {
+                data = {
                         "course_name": course_namee,
                         "date": date,
                         "points": grade_points,
                         "category": category,
                         "assignment": assignment,
                         "description": description,
-                    }
-                except UnboundLocalError:
-                    continue
+                }
+                
                 assignments[course_namee].append(data)
 
             return assignments
