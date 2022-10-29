@@ -219,8 +219,8 @@ async def gpas():
             highschool, j_session_id, student_id, mp, grade
         )
         
-        print(mp)
-        print(curr_courses_grades)
+        #print(mp)
+        #print(curr_courses_grades)
         
         noGradesCounter = 0
         totalGrade = 0
