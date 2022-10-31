@@ -39,8 +39,8 @@ def basicDataExtractorFromTDCell(data):
             description = ""
     except Exception as e:
         print(
-            "Basic Data Extractor from TDCell (including category assignment and description) - "
-            + e
+            f"Basic Data Extractor from TDCell (including category assignment and description) - {e}"
+            
         )
         category = assignment = description = ""
     return (category, assignment, description)
@@ -80,7 +80,7 @@ def gradesLogic(data):
             grade_num = grade_percent
             grade_percent = "0.0"
     except Exception as e:
-        print("Grades Logic Error - " + e)
+        print(f"Grades Logic Error - {e}")
         grade_percent = "0.0"
         grade_num = "No grade"
 
@@ -108,7 +108,7 @@ def scheduleGrades(data):
                 .strip()
             )
     except Exception as e:
-        print("Schedule Grades function error - " + e)
+        print(f"Schedule Grades function error - {e}" )
         grade_points = "0 - Error fetching points"
 
     return grade_points

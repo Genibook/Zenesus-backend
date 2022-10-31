@@ -240,7 +240,7 @@ class DataExtractor(BeautifulSoup):
                     # after: comment = str(data[commentCellNum].text).strip()
                     comment = str(data[commentCellNum].text).strip()
                 except Exception as e:
-                    print("error when fetching comment, it shoud be attribute error - ", e)
+                    print(f"error when fetching comment, it shoud be attribute error - ${e}")
                     pass
                 prev = data[prevCellNum].text.strip()
                 docs = data[docsCellNum].text.strip()
