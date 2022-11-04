@@ -77,7 +77,7 @@ async def login():
                 data["image64"] = image64.decode("utf-8")
                 
                 return jsonify(data)
-            except Exception as e:
+            except ArithmeticError as e:
                 print(e)
                 return jsonify(
                     {

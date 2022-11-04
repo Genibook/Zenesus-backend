@@ -48,21 +48,16 @@ class DataExtractor(BeautifulSoup):
     def whereabouts(self, whereabouts: bs4.element.Tag):
         table_rows = whereabouts.find_all("tr", class_="listroweven")
         img_url, counselor_name, age, locker, birthday = None, None, None, None, None
-        for idx, table_row in enumerate(table_rows):
-            if idx == 0:
-                image_src = table_row.find("img").attrs["src"]
-                img_url = my_constants[self.highschool_name]["root"] + image_src
-            if idx == 2:
-                try:
-                    counselor_name = str(table_row.text).split(":")[1].strip()
-                except IndexError:
-                    counselor_name = None
-            if idx == 3:
-                age = str(table_row.text).split(":")[1].strip()
-            if idx == 4:
-                birthday = str(table_row.text).split(":")[1].strip()
-            if idx == 5:
-                locker = str(table_row.text).split(":")[1].strip()
+        image_src = table_rows[0].find("img").attrs["src"]
+        img_url = my_constants[self.highschool_name]["root"] + image_src
+        
+        try:
+            counselor_name = str(table_rows[2].text).split(":")[1].strip()
+        except IndexError:
+            counselor_name = None
+        age = str(table_rows[-3].text).split(":")[1].strip()
+        birthday = str(table_rows[-2].text).split(":")[1].strip()
+        locker = str(table_rows[-1].text).split(":")[1].strip()
         return (img_url, counselor_name, age, birthday, locker)
 
     def schedule(self, schedule: bs4.element.Tag):

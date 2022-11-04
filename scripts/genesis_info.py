@@ -45,6 +45,7 @@ class GenesisInformation:
     async def front_page_data(self, highschool_name, j_session_id, url, user):
         html = await self.get(j_session_id, url)
         soup = DataExtractor(highschool_name, html, "html.parser")
+        
         users, whereabouts, schedule = soup.both_where_sche(user)
         img_url, counselor_name, age, birthday, locker = soup.whereabouts(whereabouts)
         schedule_link, name, grade, student_id, state_id = soup.schedule(schedule)
