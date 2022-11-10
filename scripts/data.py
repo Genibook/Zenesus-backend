@@ -50,7 +50,7 @@ class DataExtractor(BeautifulSoup):
         img_url, counselor_name, age, locker, birthday = None, None, None, None, None
         image_src = table_rows[0].find("img").attrs["src"]
         img_url = my_constants[self.highschool_name]["root"] + image_src
-        
+
         try:
             counselor_name = str(table_rows[2].text).split(":")[1].strip()
         except IndexError:
@@ -155,7 +155,7 @@ class DataExtractor(BeautifulSoup):
 
         return course_list
 
-    def CourseWork(self, course_name:str, mode:str):
+    def CourseWork(self, course_name: str, mode: str):
         course_namee = (
             mp
         ) = (
@@ -209,7 +209,9 @@ class DataExtractor(BeautifulSoup):
             # 5/5
             # 100%
 
-            if (not "not graded"  in pointCellDataInformation) and (mode == "coursework"):
+            if (not "not graded" in pointCellDataInformation) and (
+                mode == "coursework"
+            ):
                 # this means that it is a percent cell e.g.
                 # 5/5
                 # 100%
@@ -229,13 +231,15 @@ class DataExtractor(BeautifulSoup):
                 # grade percent example: 100%
                 grade_percent = gradesDictionary["grade_percent"]
                 try:
-                    # this is very interesting beacuse if you look at the actual box it will be two divs and then the text 
+                    # this is very interesting beacuse if you look at the actual box it will be two divs and then the text
                     # but just getting the text should be fine as well
                     # before: comment = str(data[commentCellNum].find("div").find("div").text).strip()
                     # after: comment = str(data[commentCellNum].text).strip()
                     comment = str(data[commentCellNum].text).strip()
                 except Exception as e:
-                    print(f"error when fetching comment, it shoud be attribute error - ${e}")
+                    print(
+                        f"error when fetching comment, it shoud be attribute error - ${e}"
+                    )
                     pass
                 prev = data[prevCellNum].text.strip()
                 docs = data[docsCellNum].text.strip()
@@ -260,7 +264,7 @@ class DataExtractor(BeautifulSoup):
                 assignments[course_namee].append(data)
 
             elif ("not graded" in pointCellDataInformation) and (mode == "schedule"):
-                #print(pointCellDataInformation)
+                # print(pointCellDataInformation)
                 # this means that not graded is in here
                 # Not Graded
                 # Assignment Pts: 5
@@ -269,7 +273,7 @@ class DataExtractor(BeautifulSoup):
                 grade_points = scheduleGrades(data)
 
                 # print(course_namee, grade_points, category, assignment, description, date)
-                
+
                 if (
                     (course_namee is None)
                     or (grade_points is None)
@@ -288,8 +292,8 @@ class DataExtractor(BeautifulSoup):
                     "description": description,
                 }
                 assignments[course_namee].append(data)
-        
-        #print(assignments)
+
+        # print(assignments)
         return assignments
 
     def findCourseWeight(self, grade: int = 10):
@@ -324,3 +328,127 @@ class DataExtractor(BeautifulSoup):
             weights.append(find_weights(row, idx))
 
         return weights
+
+    def getCourseHistoryData(self, grade: int):
+
+        main_table = self.find("table", role="main")
+        main_row = main_table.find_all("tr")[1]
+        table = main_row.find("table", class_="list")
+        rows = table.find_all("tr", recursive=False)
+
+        GpaHistory = []
+        CurrGradeTheLoopisOn = -1
+        # gonna be like [{"grade":"9", "unweightedGPA":"asdfasd", "weightedGPA":"asdfasd", "schoolYear":"2021-22",}]
+        totalCredits = 0
+        UnweightedtotalFGSTimesCredits = 0
+        WeightedtotalFGSTimesCredits = 0
+
+        for row in rows:
+            try:
+                if row["class"] == ["listheading"]:
+                    continue
+            except KeyError:
+                continue
+
+            datas = row.find_all("td")
+            Description = datas[DescriptionCell].text.strip()
+            if int(grade) >= 9:
+                if len(datas) < 7:
+                    if len(datas) == 4:
+                        if "totals" in datas[GradeCell].text.strip().lower():
+                            idx = rows.index(row)
+                            datas_before = rows[idx - 1].find_all("td")
+                            SchoolYear = str(datas_before[SchoolYearCell].text).strip()
+                            Grade = str(datas_before[GradeCell].text).strip()
+                            GpaHistory.append(
+                                genGradeHistoryGpaDict(
+                                    Grade,
+                                    UnweightedtotalFGSTimesCredits,
+                                    WeightedtotalFGSTimesCredits,
+                                    totalCredits,
+                                    SchoolYear,
+                                )
+                            )
+                            UnweightedtotalFGSTimesCredits = 0
+                            WeightedtotalFGSTimesCredits = 0
+                            totalCredits = 0
+                else:
+                    FG = datas[HighschoolFGCell].text.strip()
+                    Credits = datas[HighschoolEarnedCreditsCell].text.strip()
+
+                    try:
+                        # sometimes students take courses like online, it will be marked as P
+                        UnweightedtotalFGSTimesCredits += float(FG) * float(Credits)
+
+                        if checkCourseName(Description):
+                            WeightedtotalFGSTimesCredits += (float(FG) + 5) * float(
+                                Credits
+                            )
+
+                        else:
+                            WeightedtotalFGSTimesCredits += float(FG) * float(Credits)
+
+                    except ValueError:
+                        continue
+
+                    totalCredits += float(Credits)
+
+            else:
+                if len(datas) < 5:
+                    if len(datas) == 1:
+                        idx = rows.index(row)
+                        datas_before = rows[idx - 1].find_all("td")
+                        SchoolYear = str(datas_before[SchoolYearCell].text).strip()
+                        Grade = str(datas_before[GradeCell].text).strip()
+                        GpaHistory.append(
+                            genGradeHistoryGpaDict(
+                                Grade,
+                                UnweightedtotalFGSTimesCredits,
+                                WeightedtotalFGSTimesCredits,
+                                totalCredits,
+                                SchoolYear,
+                            )
+                        )
+                        UnweightedtotalFGSTimesCredits = 0
+                        WeightedtotalFGSTimesCredits = 0
+                        totalCredits = 0
+
+                else:
+
+                    FG = datas[LessThanHighSchoolFGCell].text.strip()
+
+                    try:
+                        # sometimes FG is weird like AP for middle schoolers
+                        UnweightedtotalFGSTimesCredits += float(FG) * 5
+
+                        if checkCourseName(Description):
+                            WeightedtotalFGSTimesCredits += (float(FG) + 5) * float(
+                                Credits
+                            )
+                        else:
+                            WeightedtotalFGSTimesCredits += float(FG) * float(Credits)
+
+                    except ValueError:
+                        continue
+
+                    totalCredits += 5
+
+                    idx = rows.index(row)
+                    if idx == len(rows) - 1:
+                        datas_before = rows[idx - 1].find_all("td")
+                        SchoolYear = str(datas_before[SchoolYearCell].text).strip()
+                        Grade = str(datas_before[GradeCell].text).strip()
+                        GpaHistory.append(
+                            genGradeHistoryGpaDict(
+                                Grade,
+                                UnweightedtotalFGSTimesCredits,
+                                WeightedtotalFGSTimesCredits,
+                                totalCredits,
+                                SchoolYear,
+                            )
+                        )
+                        UnweightedtotalFGSTimesCredits = 0
+                        WeightedtotalFGSTimesCredits = 0
+                        totalCredits = 0
+
+        return GpaHistory

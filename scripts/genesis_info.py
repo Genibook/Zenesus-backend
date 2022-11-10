@@ -206,6 +206,21 @@ class GenesisInformation:
 
         return curr_courses_grades, couresWeights
 
+    async def getGradeHistory(self, highschool_name, j_session_id, student_id: int, grade):
+        data = {
+            "tab1": "studentdata",
+            "tab2": "grading",
+            "tab3": "history",
+            "action": "form",
+            "studentid": student_id,
+        }
+        url = my_constants[highschool_name]["root"] + "/genesis/parents"
+        html = await self.get(j_session_id, url, data)
+        soup = DataExtractor(highschool_name, html, "html.parser")
+
+        
+        return soup.getCourseHistoryData(grade)
+
     async def getNamesandIds(
         self, highschool_name:str, j_session_id:str, url:str, user: int = 0
     ):

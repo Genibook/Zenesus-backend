@@ -24,3 +24,11 @@ docsCellNum = 8
 
 unNormalNotGradedCell = 2
 NormalGradedCell = 1
+
+# for grade history
+SchoolYearCell = 0
+GradeCell = 1
+HighschoolFGCell = 4
+HighschoolEarnedCreditsCell = 6
+LessThanHighSchoolFGCell = 4
+DescriptionCell = 2

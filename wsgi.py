@@ -1,4 +1,3 @@
-
 from flask import Flask, jsonify, request, render_template
 import aiohttp
 import os
@@ -6,6 +5,7 @@ from scripts.genesis_info import GenesisInformation
 import json
 from flask_cors import CORS
 from utils.utils import info, initialize, parse_request_data
+
 
 class Storage:
     def __init__(self):
@@ -75,7 +75,7 @@ async def login():
                 data["student_id"] = student_id
                 data["state_id"] = state_id
                 data["image64"] = image64.decode("utf-8")
-                
+
                 return jsonify(data)
             except ArithmeticError as e:
                 print(e)
@@ -136,7 +136,7 @@ async def getcourseinfo():
         grade_page_data = await myInfo.grade_page_data(
             highschool, j_session_id, student_id, mp
         )
-       #  print(grade_page_data)
+        #  print(grade_page_data)
         return jsonify(grade_page_data)
 
 
@@ -164,7 +164,7 @@ async def currentgrades():
             student_id,
             mp,
         )
-        
+
         return jsonify(curr_courses_grades)
 
 
@@ -218,10 +218,10 @@ async def gpas():
         curr_courses_grades, courseWeights = await myInfo.getGpas(
             highschool, j_session_id, student_id, mp, grade
         )
-        
-        #print(mp)
-        #print(curr_courses_grades)
-        
+
+        # print(mp)
+        # print(curr_courses_grades)
+
         noGradesCounter = 0
         totalGrade = 0
         totalWeightedGrade = 0
@@ -235,7 +235,7 @@ async def gpas():
             elif "no grades" in grade_data[3].replace("%", "").lower():
                 # assuming that if it is no grades, the entire thing is no grades
                 noGradesCounter += 1
-                
+
             elif "not graded" in grade_data[3].replace("%", "").lower():
                 continue
             else:
@@ -253,7 +253,7 @@ async def gpas():
                     or str(name).startswith("H-")
                 ) and (grade != 0.0):
                     totalWeightedGrade += (grade + 5) * weight
-                    
+
                 else:
                     totalWeightedGrade += grade * weight
                 totalGrade += grade * weight
@@ -265,7 +265,7 @@ async def gpas():
         weightedGpa = round(totalWeightedGrade / totalWeights, 2)
         unweightedGpa = round(totalGrade / totalWeights, 2)
 
-        if noGradesCounter+1 > len( curr_courses_grades["grades"]):
+        if noGradesCounter + 1 > len(curr_courses_grades["grades"]):
             return jsonify({"weighted gpa": 0.0, "unweighted gpa": 0.0})
 
         return jsonify({"weighted gpa": weightedGpa, "unweighted gpa": unweightedGpa})
@@ -273,7 +273,7 @@ async def gpas():
 
 @app.route("/api/studentNameandIds", methods=["POST"])
 async def studentNamesandIds():
-    email, password, highschool,users = parse_request_data()
+    email, password, highschool, users = parse_request_data()
     async with aiohttp.ClientSession() as session:
         try:
             j_session_id, parameter_data, url = await myInfo.get_cookie(
@@ -287,15 +287,16 @@ async def studentNamesandIds():
 
         return jsonify({"names": names, "ids": ids})
 
+
 @app.route("/api/monthSchedule", methods=["GET", "POST"])
 async def getPastandNowAssignements():
     if request.method == "POST":
         email, password, highschool, user = parse_request_data()
-    elif request.method == "GET":
-        email = request.args.get("email")
-        password = request.args.get("password")
-        highschool = request.args.get("highschool")
-        user = int(request.args.get("user"))
+    # elif request.method == "GET":
+    #     email = request.args.get("email")
+    #     password = request.args.get("password")
+    #     highschool = request.args.get("highschool")
+    #     user = int(request.args.get("user"))
     async with aiohttp.ClientSession() as session:
         try:
             j_session_id, student_id, users, grade, name_of_student = await initialize(
@@ -313,18 +314,42 @@ async def getPastandNowAssignements():
                             "category": "N/A",
                             "assignment": "N/A",
                             "description": "",
-                            
                         }
-                        
                     ]
                 }
             )
-        
+
         schedule = await myInfo.grade_page_data(
             highschool, j_session_id, student_id, None, "schedule"
         )
-       #  print(grade_page_data)
+        #  print(grade_page_data)
         return jsonify(schedule)
+
+
+@app.route("/api/gradeHistory", methods=["GET", "POST"])
+async def gradeHistory():
+    if request.method == "POST":
+        email, password, highschool, user = parse_request_data()
+    # comment this one out when in production
+    elif request.method == "GET":
+        email = request.args.get("email")
+        password = request.args.get("password")
+        highschool = request.args.get("highschool")
+        user = int(request.args.get("user"))
+    # email, password, highschool, user = parse_request_data()
+    async with aiohttp.ClientSession() as session:
+        try:
+            j_session_id, student_id, users, grade, name_of_student = await initialize(
+                session, email, password, highschool, user
+            )
+        except Exception as e:
+            print(e)
+            return 
+        
+        gradeHistory = await myInfo.getGradeHistory(highschool, j_session_id, student_id, grade)
+        
+        return jsonify(gradeHistory)
+
 
 @app.route("/pp")
 def privacyPolicy():

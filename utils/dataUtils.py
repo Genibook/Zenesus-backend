@@ -40,7 +40,6 @@ def basicDataExtractorFromTDCell(data):
     except Exception as e:
         print(
             f"Basic Data Extractor from TDCell (including category assignment and description) - {e}"
-            
         )
         category = assignment = description = ""
     return (category, assignment, description)
@@ -108,7 +107,7 @@ def scheduleGrades(data):
                 .strip()
             )
     except Exception as e:
-        print(f"Schedule Grades function error - {e}" )
+        print(f"Schedule Grades function error - {e}")
         grade_points = "0 - Error fetching points"
 
     return grade_points
@@ -137,3 +136,35 @@ def get_course_and_id(row):
     except AttributeError:
         pass
     return course_list
+
+
+def checkCourseName(name: str):
+
+    if (
+        str(name).startswith("AP")
+        or "honors" in str(name).lower()
+        or str(name).startswith("H-")
+    ):
+        return True
+    else:
+        return False
+
+
+def genGradeHistoryGpaDict(
+    grade,
+    UnweightedtotalFGSTimesCredits,
+    WeightedtotalFGSTimesCredits,
+    totalCredits,
+    SchoolYear,
+):
+    try:
+        return {
+            "grade": grade,
+            "unweightedGPA": str(
+                round(UnweightedtotalFGSTimesCredits / totalCredits, 2)
+            ),
+            "weightedGPA": str(round(WeightedtotalFGSTimesCredits / totalCredits, 2)),
+            "schoolYear": SchoolYear,
+        }
+    except ZeroDivisionError:
+        return {}
