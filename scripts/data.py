@@ -360,6 +360,7 @@ class DataExtractor(BeautifulSoup):
                             datas_before = rows[idx - 1].find_all("td")
                             SchoolYear = str(datas_before[SchoolYearCell].text).strip()
                             Grade = str(datas_before[GradeCell].text).strip()
+                            Grade = str(int(Grade))
                             GpaHistory.append(
                                 genGradeHistoryGpaDict(
                                     Grade,
@@ -400,6 +401,7 @@ class DataExtractor(BeautifulSoup):
                         datas_before = rows[idx - 1].find_all("td")
                         SchoolYear = str(datas_before[SchoolYearCell].text).strip()
                         Grade = str(datas_before[GradeCell].text).strip()
+                        Grade = str(int(Grade))
                         GpaHistory.append(
                             genGradeHistoryGpaDict(
                                 Grade,
@@ -438,6 +440,7 @@ class DataExtractor(BeautifulSoup):
                         datas_before = rows[idx - 1].find_all("td")
                         SchoolYear = str(datas_before[SchoolYearCell].text).strip()
                         Grade = str(datas_before[GradeCell].text).strip()
+                        Grade = str(int(Grade))
                         GpaHistory.append(
                             genGradeHistoryGpaDict(
                                 Grade,
