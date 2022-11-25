@@ -331,11 +331,11 @@ async def gradeHistory():
     if request.method == "POST":
         email, password, highschool, user = parse_request_data()
     # comment this one out when in production
-    elif request.method == "GET":
-        email = request.args.get("email")
-        password = request.args.get("password")
-        highschool = request.args.get("highschool")
-        user = int(request.args.get("user"))
+    # elif request.method == "GET":
+    #     email = request.args.get("email")
+    #     password = request.args.get("password")
+    #     highschool = request.args.get("highschool")
+    #     user = int(request.args.get("user"))
     # email, password, highschool, user = parse_request_data()
     async with aiohttp.ClientSession() as session:
         try:
@@ -348,7 +348,8 @@ async def gradeHistory():
         
         gradeHistory = await myInfo.getGradeHistory(highschool, j_session_id, student_id, grade)
         
-        return jsonify(gradeHistory)
+        data = {"data": gradeHistory}
+        return jsonify(data)
 
 
 @app.route("/pp")

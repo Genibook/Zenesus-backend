@@ -355,7 +355,8 @@ class DataExtractor(BeautifulSoup):
             if int(grade) >= 9:
                 if len(datas) < 7:
                     if len(datas) == 4:
-                        if "totals" in datas[GradeCell].text.strip().lower():
+                        description = datas[GradeCell].text.strip().lower()
+                        if "totals" in description and not "transcript" in description:
                             idx = rows.index(row)
                             datas_before = rows[idx - 1].find_all("td")
                             SchoolYear = str(datas_before[SchoolYearCell].text).strip()
