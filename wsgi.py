@@ -136,7 +136,7 @@ async def getcourseinfo():
         grade_page_data = await myInfo.grade_page_data(
             highschool, j_session_id, student_id, mp
         )
-        #  print(grade_page_data)
+        #print(grade_page_data)
         return jsonify(grade_page_data)
 
 
@@ -251,6 +251,7 @@ async def gpas():
                     "AP" in name
                     or "honors" in str(name).lower()
                     or str(name).startswith("H-")
+                    or str(name).strip().endswith("H")
                 ) and (grade != 0.0):
                     totalWeightedGrade += (grade + 5) * weight
 

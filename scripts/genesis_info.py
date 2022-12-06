@@ -75,6 +75,8 @@ class GenesisInformation:
         course_name: str,
         mode: str
     ):
+        #print(highschool_name, j_session_id, url, mp, student_id, courseid, coursection, course_name)
+        
         if mp.lower() ==  "FG":
             mp = "allMP"
         data = {
@@ -133,6 +135,7 @@ class GenesisInformation:
             currmp = soup.currentMarkingPeriod()
         else:
             currmp = mp
+
 
         for course_dict in course_list:
             for course_name, val in course_dict.items():
