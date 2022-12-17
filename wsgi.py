@@ -35,7 +35,7 @@ async def getUsers():
             )
             return jsonify({"users": users})
         except Exception as e:
-            print(e)
+            print("getusers exception\n" + e)
             return jsonify({"users": "0"})
 
 
@@ -108,7 +108,7 @@ async def getcourseinfo():
                 session, email, password, highschool, user
             )
         except Exception as e:
-            print(e)
+            print("course Infos error\n" + e)
             return jsonify(
                 {
                     "RANDOM COURSE NAME": [
@@ -155,7 +155,7 @@ async def currentgrades():
             )
             grade = gradee
         except Exception as e:
-            print(e)
+            print("Error while at current grades\n" + e)
             return jsonify({"grades": [["N/A", "N/A", "N/A", "100", "N/A"]]})
 
         curr_courses_grades = await myInfo.current_grades(
