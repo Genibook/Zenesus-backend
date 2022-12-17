@@ -23,20 +23,20 @@ async def home():
     return render_template("index.html")
 
 
-@app.route("/api/getusers", methods=["POST"])
-async def getUsers():
-    if request.method == "POST":
-        async with aiohttp.ClientSession() as session:
-            email, password, highschool, user = parse_request_data()
-
-        try:
-            j_session_id, student_id, users, grade, name = await initialize(
-                session, email, password, highschool, user
-            )
-            return jsonify({"users": users})
-        except Exception as e:
-            print("getusers exception\n" + e)
-            return jsonify({"users": "0"})
+# @app.route("/api/getusers", methods=["POST"])
+# async def getUsers():
+#     if request.method == "POST":
+#         async with aiohttp.ClientSession() as session:
+#             email, password, highschool, user = parse_request_data()
+#             try:
+#                 j_session_id, student_id, users, grade, name = await initialize(
+#                     session, email, password, highschool, int(user)
+#                 )
+#                 #print(users)
+#                 return jsonify({"users": users})
+#             except Exception as e:
+#                 print(f"getusers exception\n{e}")
+#                 return jsonify({"users": "0"})
 
 
 @app.route("/api/login", methods=["POST"])
@@ -108,7 +108,7 @@ async def getcourseinfo():
                 session, email, password, highschool, user
             )
         except Exception as e:
-            print("course Infos error\n" + e)
+            print(f"course Infos error\n{e}")
             return jsonify(
                 {
                     "RANDOM COURSE NAME": [
@@ -155,7 +155,7 @@ async def currentgrades():
             )
             grade = gradee
         except Exception as e:
-            print("Error while at current grades\n" + e)
+            print(f"Error while at current grades\n{e}")
             return jsonify({"grades": [["N/A", "N/A", "N/A", "100", "N/A"]]})
 
         curr_courses_grades = await myInfo.current_grades(
@@ -359,4 +359,4 @@ def privacyPolicy():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5660, debug=True)

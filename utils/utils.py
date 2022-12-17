@@ -24,6 +24,7 @@ async def getImage64(j_session_id: str, url: str, headers=None):
 def parse_request_data():
     request_data = request.data
     request_data = json.loads(request_data.decode("utf-8"))
+    
     email = request_data["email"]
     password = request_data["password"]
     highschool = request_data["highschool"]
