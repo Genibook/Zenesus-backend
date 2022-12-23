@@ -79,7 +79,7 @@ def gradesLogic(data):
             grade_num = grade_percent
             grade_percent = "0.0"
     except Exception as e:
-        print(f"Grades Logic Error - {e}")
+        print(f"Grades Logic Error (in file dataUtils) (used in data.py) - {e}")
         grade_percent = "0.0"
         grade_num = "No grade"
 
