@@ -225,7 +225,7 @@ class DataExtractor(BeautifulSoup):
                 category, assignment, description = basicDataExtractorFromTDCell(data)
 
                 # please reference utils/dataUtils.py
-                gradesDictionary = gradesLogic(data)
+                gradesDictionary = gradesLogic(data, course_namee)
                 # grade num example: 5/5
                 grade_num = gradesDictionary["grade_num"]
                 # grade percent example: 100%
@@ -290,6 +290,41 @@ class DataExtractor(BeautifulSoup):
                     "category": category,
                     "assignment": assignment,
                     "description": description,
+                }
+                assignments[course_namee].append(data)
+                
+                
+            elif ("not graded" in pointCellDataInformation) and (mode == "coursework"):
+                mp = str(data[mpCellNum].text).strip()
+                dayname = dateCell[0].text.strip()
+                category, assignment, description = basicDataExtractorFromTDCell(data)
+                grade_points = scheduleGrades(data)
+                if (
+                    (course_namee is None)
+                    or (grade_points is None)
+                    or (category is None)
+                    or (assignment is None)
+                    or (description is None)
+                    or (date is None)
+                ):
+                    continue
+                
+                data = {
+                    "course_name": course_namee,
+                    "mp": mp,
+                    "dayname": dayname,
+                    "full_dayname": NONE_STRING,
+                    "date": date,
+                    "full_date": NONE_STRING,
+                    "teacher": NONE_STRING,
+                    "category": NONE_STRING,
+                    "assignment": assignment,
+                    "description": NONE_STRING,
+                    "grade_percent": NONE_STRING,
+                    "grade_num": "0" + "/" + str(grade_points),
+                    "comment": NONE_STRING,
+                    "prev": NONE_STRING,
+                    "docs": NONE_STRING,
                 }
                 assignments[course_namee].append(data)
 

@@ -45,7 +45,8 @@ def basicDataExtractorFromTDCell(data):
     return (category, assignment, description)
 
 
-def gradesLogic(data):
+def gradesLogic(data, course_name):
+    
     try:
         grade_percent = data[gradeCellNum].find("div").text.strip().replace("%", "")
         grade_num = (
@@ -79,7 +80,8 @@ def gradesLogic(data):
             grade_num = grade_percent
             grade_percent = "0.0"
     except Exception as e:
-        print(f"Grades Logic Error (in file dataUtils) (used in data.py) - {e}")
+        print(f"--------\nGrades Logic Error (in file dataUtils) (used in data.py) - {e}\nCourse Name: {course_name}\n--------")
+        #print(data)
         grade_percent = "0.0"
         grade_num = "No grade"
 

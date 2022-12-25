@@ -32,3 +32,5 @@ HighschoolFGCell = 4
 HighschoolEarnedCreditsCell = 6
 LessThanHighSchoolFGCell = 4
 DescriptionCell = 2
+
+NONE_STRING = "N/A"
